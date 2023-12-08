@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Blog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  slug       String
+  desc       String
+  link       String
+  date       DateTime
+  coverImage String?
+  language   Language @default(English)
+  platform   Platform @relation(fields: [platformId], references: [id])
+  platformId String   @db.ObjectId
+  // every blog has one category
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.ObjectId
+  // every blog can have multiple tags
+  tags       Tags[]   @relation(fields: [tagId], references: [id])
+  tagId      String[] @db.ObjectId
+}
+
+enum Language {
+  Marathi
+  English
+  Hindi
+}
+
+model Tags {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  name   String
+  label  String
+  blogId String[] @db.ObjectId
+  blogs  Blog[]   @relation(fields: [blogId], references: [id])
+}
+
+model Category {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  label String
+  blogs Blog[]
+}
+
+model Platform {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  label String
+  blogs Blog[]
+}
