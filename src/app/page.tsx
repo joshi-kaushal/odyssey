@@ -1,8 +1,14 @@
-import Image from 'next/image'
+import AddBlog from "@/components/blog/add-blog";
+import { fetchCategories } from "@/lib/prisma/category";
+import { fetchTags } from "@/lib/prisma/tags";
+export default async function Home() {
+  const tags = await fetchTags();
+  const categories = await fetchCategories();
 
-export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1>Odyssey</h1></main>
-  )
+    <main className="flex min-h-screen flex-col items-center p-24">
+      <h1>Odyssey</h1>
+      <AddBlog tags={tags} categories={categories} />
+    </main>
+  );
 }

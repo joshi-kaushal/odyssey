@@ -11,48 +11,79 @@ datasource db {
 }
 
 model Blog {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  slug       String
-  desc       String
-  link       String
-  date       DateTime
-  coverImage String?
-  language   Language @default(English)
-  platform   Platform @relation(fields: [platformId], references: [id])
-  platformId String   @db.ObjectId
-  // every blog has one category
-  category   Category @relation(fields: [categoryId], references: [id])
-  categoryId String   @db.ObjectId
-  // every blog can have multiple tags
-  tags       Tags[]   @relation(fields: [tagId], references: [id])
-  tagId      String[] @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String
+  description String
+  url         String
+  date        DateTime
+  platform    String
+  language    String
+  categoryId  String   @db.ObjectId
+  category    Category @relation(fields: [categoryId], references: [id])
+  tags        Tags[]   @relation(fields: [tagId], references: [id])
+  tagId       String[] @db.ObjectId
+  thumbnail   String
+}
+
+model Category {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  value String
+  label String
+  blogs Blog[]
 }
 
 enum Language {
-  Marathi
-  English
-  Hindi
+  marathi
+  english
+  hindi
 }
 
 model Tags {
   id     String   @id @default(auto()) @map("_id") @db.ObjectId
-  name   String
+  value  String
   label  String
   blogId String[] @db.ObjectId
   blogs  Blog[]   @relation(fields: [blogId], references: [id])
 }
 
-model Category {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  name  String
-  label String
-  blogs Blog[]
-}
+// model Category {
+//   id    String @id @default(auto()) @map("_id") @db.ObjectId
+//   name  String
+//   label String
+//   blogs Blog[]
+// }
 
-model Platform {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  name  String
-  label String
-  blogs Blog[]
-}
+// model Platform {
+//   id    String @id @default(auto()) @map("_id") @db.ObjectId
+//   name  String
+//   label String
+//   blogs Blog[]
+// }
+
+// model Blog {
+//   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+//   title      String
+//   slug       String
+//   desc       String
+//   link       String
+//   date       DateTime
+//   coverImage String?
+//   language   Language @default(english)
+//   platform   Platform @relation(fields: [platformId], references: [id])
+//   platformId String   @db.ObjectId
+//   // every blog has one category
+//   category   Category @relation(fields: [categoryId], references: [id])
+//   categoryId String   @db.ObjectId
+//   // every blog can have multiple tags
+//   tags       Tags[]   @relation(fields: [tagId], references: [id])
+//   tagId      String[] @db.ObjectId
+// }
+
+// model Blojg {
+//   id         String   @id @default(auto())
+//   title      String
+//   content    String
+//   categoryId String
+//   category   Category @relation(fields: [categoryId], references: [id])
+// }
