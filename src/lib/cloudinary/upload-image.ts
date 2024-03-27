@@ -1,5 +1,4 @@
 export default async function uploadImage(file: any) {
-
   const thumbnail = new FormData();
 
   thumbnail.append("file", file);
@@ -11,8 +10,9 @@ export default async function uploadImage(file: any) {
       method: "POST",
       body: thumbnail,
     }
-  ).then((response) => response.json())
-    .catch(error => console.log(error));
+  )
+    .then((response) => response.json())
+    .catch((error) => console.log(error));
 
-  return response.url
+  return response.url;
 }

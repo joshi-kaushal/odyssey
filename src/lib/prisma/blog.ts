@@ -9,7 +9,7 @@ export async function addNewBlogToDB(data: any) {
         value: data.category,
       },
     });
-    
+
     const tags = await prisma.tags.findMany({
       where: {
         value: {
@@ -20,10 +20,10 @@ export async function addNewBlogToDB(data: any) {
         id: true,
       },
     });
-    const tagIDs = tags.map(tag => tag.id);
+    const tagIDs = tags.map((tag) => tag.id);
 
-    const date = formatISO(parseISO(data.date))
-    
+    const date = formatISO(parseISO(data.date));
+
     const res = await prisma.blog.create({
       data: {
         title: data.title,
@@ -40,39 +40,41 @@ export async function addNewBlogToDB(data: any) {
         },
         thumbnail: data.thumbnail,
         tags: {
-          connect: tagIDs.map(id => ({ id })),
-        }
+          connect: tagIDs.map((id) => ({ id })),
+        },
       },
     });
 
     return {
       success: true,
       error: undefined,
-      data: res
+      data: res,
     };
   } catch (error) {
     return {
       success: false,
       error: error,
-      data: undefined
-    }
+      data: undefined,
+    };
   }
 }
 
 export async function fetchAllBlogs() {
   try {
-    const blogs = await prisma.blog.findMany({})
+    const blogs = await prisma.blog.findMany({
+      orderBy: [{ date: "desc" }],
+    });
 
     return {
       success: true,
       errors: undefined,
-      data: blogs
-    }
+      data: blogs,
+    };
   } catch (error) {
     return {
       success: false,
       errors: error,
-      data: undefined
-    }
+      data: undefined,
+    };
   }
 }
