@@ -24,9 +24,9 @@ export default async function addNewBlog(
   const language = formData.get("language") as string;
   const category = formData.get("category") as string;
   const tags = formData.getAll("tags") as string[];
-  const thumbnail = formData.get("thumbnail") as string;
+  const thumbnail = formData.get("thumbnail") as File;
 
-  const thumbnailURL = thumbnail ? await uploadImage(thumbnail) : "";
+  const thumbnailURL = thumbnail ? await uploadImage(thumbnail, slug) : "";
 
   try {
     BlogSchema.parse({

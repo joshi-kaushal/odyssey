@@ -1,7 +1,6 @@
 "use client";
+
 import {
-  FC,
-  PropsWithChildren,
   ReactNode,
   RefObject,
   useCallback,
@@ -88,7 +87,7 @@ export default function DragAndDrop({
   return (
     <div {...getRootProps()}>
       <input {...getInputProps()} name={name} />
-      {children || <p>Drag and drop files or select to browse</p>}
+      {children || <p>Drag and drop files or select to browse</p>} 
     </div>
   );
 }
