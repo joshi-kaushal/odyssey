@@ -40,7 +40,7 @@ export default function Multiselect({
       if (newOption) {
         setSelectedOptions((prev) => [...prev, newOption]);
         isMulti
-          ? setValue((prev) => (prev ? [...prev, newOption] : [newOption]))
+          ? setValue((prev: Option | Option[]) => (prev && prev instanceof Array ? [...prev, newOption] : [newOption]))
           : setValue(newOption);
       }
     }
@@ -58,7 +58,7 @@ export default function Multiselect({
       allowCreateWhileLoading={true}
       createOptionPosition="first"
       onCreateOption={handleCreate}
-      onChange={(newValue) => setValue(newValue)}
+      onChange={(newValue: any) => setValue(newValue)}
       options={selectedOptions}
       value={value}
       closeMenuOnSelect={!isMulti}

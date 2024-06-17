@@ -7,8 +7,8 @@ interface BlogSlugPageProps {
   params: { slug: string };
 }
 export default async function Page({ params }: BlogSlugPageProps) {
-  const { errors, success, data: blog } = await getBlogBySlug(params.slug);
-  if (!blog || !success) {
+  const data = await getBlogBySlug(params.slug);
+  if (!data?.data || !data.success) {
     return (
       <section className="flex items-center flex-col gap-4 justify-center min-h-screen">
         <h1 className="text-3xl font-bold text-red-500">
@@ -29,23 +29,23 @@ export default async function Page({ params }: BlogSlugPageProps) {
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(blog.date);
+  }).format(data?.data.date);
 
   return (
     <section>
-      <h1>{blog.title}</h1>
+      <h1>{data?.data.title}</h1>
       <p>
         Published on <time>{formattedDate}</time>
       </p>
-      <p>Category: {blog.category?.label}</p>
+      <p>Category: {data?.data.category?.label}</p>
       <div>
         <p>Tags: </p>
-        {blog.tags?.map((tag: any) => (
+        {data?.data.tags?.map((tag: any) => (
           <p key={tag.id}>{tag.label}</p>
         ))}
       </div>
 
-      <Image src={blog.thumbnail} alt={blog.title} width={1080} height={729} />
+      <Image src={data?.data.thumbnail} alt={data?.data.title} width={1080} height={729} />
     </section>
   );
 }
