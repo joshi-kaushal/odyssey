@@ -17,7 +17,12 @@ export default async function Page() {
           </div>
 
           <div>
-            <Link href="/blog/new" className="hover:text-blue-500/80 transition-all text-blue-500 duration-300 ease-in-out font-semibold">Add new blog</Link>
+            <Link
+              href="/blog/new"
+              className="hover:text-blue-500/80 transition-all text-blue-500 duration-300 ease-in-out font-semibold"
+            >
+              Add new blog
+            </Link>
           </div>
         </div>
       </div>
@@ -51,7 +56,7 @@ export default async function Page() {
                 </Link>
                 <DeleteBlogButton id={blog.id} />
                 <Link
-                  href={`/blog/manage/${blog.slug}`}
+                  href={`/blog/new?edit=${blog.slug}`}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
                 >
                   Edit

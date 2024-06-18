@@ -1,7 +1,7 @@
 "use server";
 
 import uploadImage from "@/lib/cloudinary/upload-image";
-import { addNewBlogToDB } from "@/lib/prisma/blog";
+import { addNewBlogToDB, checkIfBlogAlreadyExists, deleteBlogByID, deleteBlogByURL } from "@/lib/prisma/blog";
 import { BlogFields, BlogSchema } from "@/lib/zod/BlogSchema";
 import { ZodError } from "zod";
 
@@ -25,8 +25,29 @@ export default async function addNewBlog(
   const category = formData.get("category") as string;
   const tags = formData.getAll("tags") as string[];
   const thumbnail = formData.get("thumbnail") as File;
+  let thumbnailURL = "";
 
-  const thumbnailURL = thumbnail && await uploadImage(thumbnail, slug);
+   if(!title || !url || !date || !platform) {
+    return {
+      success: false,
+      errors: "Title, URL, published date and platform are mandatory fields",
+      data: undefined,
+    };
+  }
+  
+  if (thumbnail && thumbnail instanceof File) {
+  thumbnailURL = await uploadImage(thumbnail, slug);
+  } 
+  
+  const doesBlogAlreadyExist = await checkIfBlogAlreadyExists(title,slug,url)
+  // if(doesBlogAlreadyExist) {
+  //    return {
+  //     success: false,
+  //     errors: "Blog already exists in the database. You are using any of the title, slug or URL again.",
+  //     data: undefined,
+  //   };
+  // }
+  
   try {
     BlogSchema.parse({
       title,
@@ -38,9 +59,13 @@ export default async function addNewBlog(
       category,
       language,
       tags,
-      thumbnail: thumbnailURL?.data,
+      thumbnail: thumbnailURL,
     });
+
     try {
+      if(doesBlogAlreadyExist) {
+        deleteBlogByURL(url)
+      }
       const response = await addNewBlogToDB({
         title,
         slug,
@@ -51,7 +76,7 @@ export default async function addNewBlog(
         platform,
         category,
         tags,
-        thumbnail: thumbnailURL?.data,
+        thumbnail: thumbnailURL,
       });
 
       return {
@@ -97,24 +122,4 @@ export default async function addNewBlog(
       },
     };
   }
-
-  // const result = BlogSchema.safeParse(parsedBlog)
-  // if (!result.success) {
-  //   let errorMessage = ""
-  //   result.error.issues.forEach((issue: any) => {
-  //     errorMessage += `${errorMessage} ${issue.path} : ${issue.message} . `
-  //   })
-  //   console.log(errorMessage)
-  //   return { error: errorMessage }
-  // }
-
-  // try {
-  //   const res = await addNewBlogToDB(result.data)
-  //   return { result: res}
-  // } catch (error) {
-  //   console.error(error)
-  //   return { error }
-  // } finally {
-  //   revalidatePath("/")
-  // }
 }

@@ -1,21 +1,21 @@
-import { getBlogBySlug } from "@/lib/prisma/blog";
+import { fetchAllBlogs, getBlogBySlug } from "@/lib/prisma/blog";
 import { notFound } from "next/navigation";
 import AddBlog from "../_components/add-blog";
 import { fetchCategories } from "@/lib/prisma/category";
 import { fetchTags } from "@/lib/prisma/tags";
 
 interface BlogSManagePageProps {
-  params: { manage: string[] };
+  params: { edit: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function Page({ params }: BlogSManagePageProps) {
-  if (params.manage?.length > 2) {
-    return notFound();
-  }
-  const blog = params.manage?.[1]
-    ? await getBlogBySlug(params.manage?.[1])
+export default async function Page({
+  params,
+  searchParams,
+}: BlogSManagePageProps) {
+  const blog = searchParams?.edit && typeof searchParams.edit === "string"
+    ? await getBlogBySlug(searchParams.edit)
     : undefined;
-
   const tags = await fetchTags();
   const categories = await fetchCategories();
   return (
