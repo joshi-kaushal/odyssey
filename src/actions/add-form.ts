@@ -26,8 +26,7 @@ export default async function addNewBlog(
   const tags = formData.getAll("tags") as string[];
   const thumbnail = formData.get("thumbnail") as File;
 
-  const thumbnailURL = thumbnail ? await uploadImage(thumbnail, slug) : "";
-
+  const thumbnailURL = thumbnail && await uploadImage(thumbnail, slug);
   try {
     BlogSchema.parse({
       title,
@@ -39,9 +38,8 @@ export default async function addNewBlog(
       category,
       language,
       tags,
-      thumbnail: thumbnailURL,
+      thumbnail: thumbnailURL?.data,
     });
-
     try {
       const response = await addNewBlogToDB({
         title,
@@ -53,13 +51,13 @@ export default async function addNewBlog(
         platform,
         category,
         tags,
-        thumbnail: thumbnailURL,
+        thumbnail: thumbnailURL?.data,
       });
 
       return {
         success: true,
         errors: undefined,
-        fieldValues: "response lol",
+        fieldValues: response,
       };
     } catch (error: any) {
       return {

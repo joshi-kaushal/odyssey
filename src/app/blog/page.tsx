@@ -7,7 +7,7 @@ export default async function Page() {
   const blogs = await fetchAllBlogs();
   return (
     <>
-      <div className="mt">
+      <div className="mt w-11/12 md:w-8/12 mx-auto">
         <div className="flex items-center justify-between p-4">
           <div className="flex flex-col gap-2 md:flex-row md:gap-4 md:items-center">
             <h1 className="text-3xl font-bold">Blogs</h1>{" "}
@@ -17,20 +17,13 @@ export default async function Page() {
           </div>
 
           <div>
-            <Button variant="default">Add new blog</Button>
+            <Link href="/blog/new" className="hover:text-blue-500/80 transition-all text-blue-500 duration-300 ease-in-out font-semibold">Add new blog</Link>
           </div>
         </div>
       </div>
       <hr className="px-4 my-8 text-gray-600" />
 
       <div>
-        {!blogs.success && (
-          <div className="mx-auto">
-            <p className="text-center text-red-500">Something went wrong</p>
-            <p>{blogs.errors as string}</p>
-          </div>
-        )}
-
         {blogs.data?.map((blog) => {
           const formattedDate = new Intl.DateTimeFormat("en-US", {
             year: "numeric",
@@ -39,7 +32,7 @@ export default async function Page() {
           }).format(blog.date);
           return (
             <div
-              className="flex flex-col gap-2 p-4 transition-all duration-300 ease-in-out border-b md:justify-between md:flex-row md:gap-0 hover:bg-slate-100 last:border-none"
+              className="flex flex-col gap-2 p-4 transition-all duration-300 mt w-11/12 md:w-8/12 mx-auto ease-in-out border-b md:justify-between md:flex-row md:gap-0 hover:bg-slate-100 last:border-none"
               key={blog.id}
             >
               <div>

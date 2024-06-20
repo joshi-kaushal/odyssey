@@ -9,20 +9,18 @@ interface BlogSManagePageProps {
 }
 
 export default async function Page({ params }: BlogSManagePageProps) {
-  if (params.manage.length > 2) {
+  if (params.manage?.length > 2) {
     return notFound();
   }
-  const blog = await getBlogBySlug(params.manage[1]);
-
-  if (!blog.success || !blog.data) {
-    return notFound();
-  }
+  const blog = params.manage?.[1]
+    ? await getBlogBySlug(params.manage?.[1])
+    : undefined;
 
   const tags = await fetchTags();
   const categories = await fetchCategories();
   return (
     <main className="flex flex-col gap-4 w-6/12 mx-auto justify-center min-h-screen">
-      <AddBlog tags={tags} categories={categories} blog={blog.data} />
+      <AddBlog tags={tags} categories={categories} blog={blog?.data} />
     </main>
   );
 }
