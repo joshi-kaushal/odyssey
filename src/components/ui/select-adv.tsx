@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { Input } from './input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Button } from './button';
-import { AddTag } from '@/lib/prisma/tags';
 
 interface SelectItem {
     id: string;
@@ -54,8 +53,6 @@ const SearchableSelect: React.FC<SelectProps> = ({ items, onSelect }) => {
 
             onSelect(newItem);
             setInputValue('');
-
-            const f = AddTag(inputValue.trim())
         }
 
         setShowAddPrompt(false);

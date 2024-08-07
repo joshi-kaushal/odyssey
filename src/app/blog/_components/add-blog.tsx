@@ -24,37 +24,9 @@ import { Textarea } from "@/components/ui/textarea";
 import FormField from "./form-field";
 import { Button } from "@/components/ui/button";
 
-interface Tag {
-  id: string;
-  value: string;
-  label: string;
-}
-
-interface AddBlogProps {
-  tags: Tag[];
-  categories: Tag[];
-  blog: Blog | undefined;
-}
-
-interface Blog {
-  category: Tag | null;
-  tags: any;
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  url: string;
-  date: Date;
-  platform: string;
-  language: string;
-  categoryId: string;
-  tagId: string[];
-  thumbnail: string;
-}
-
 export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
-  const [thumbnail, setThumbnail] = useState<File | string | null>(
-    blog?.thumbnail || null
+  const [thumbnail, setThumbnail] = useState<File | string>(
+    blog?.thumbnail || ""
   );
   const { pending } = useFormStatus();
   const formRef = useRef<HTMLFormElement>(null);
@@ -75,12 +47,18 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
       thumbnail: thumbnail,
     },
   });
+
   useEffect(() => {
     if (formState.success) {
-      toast.success("A new blog has been added successfully.");
+      if (blog?.title) {
+        toast.success("The blog has been edited.");
+        console.log(formState.fieldValues)
+      } else {
+        toast.success("A new blog has been added successfully.");
+      }
     } else if (formState.errors) {
-      toast.error("Something went wrong :/");
-      console.error("Error while adding the blog: ", formState.errors);
+      toast.error(formState.errors);
+      setThumbnail("")
     }
   }, [formState]);
 
@@ -99,11 +77,10 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             type="text"
             name="title"
             defaultValue={formState.fieldValues?.title || ""}
-            className={`${
-              formState?.errors?.title
+            className={`${formState?.errors?.title
               ? "border-red-500 focus-visible:ring-red-500"
-                : ""
-            }`}
+              : ""
+              }`}
           />
         </FormField>
 
@@ -116,8 +93,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             name="slug"
             defaultValue={formState.fieldValues?.slug}
             className={`${formState?.errors?.slug
-                ? "border-red-500 focus-visible:ring-red-500"
-                : ""
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
               }`}
           />
         </FormField>
@@ -131,8 +108,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             rows={4}
             defaultValue={formState.fieldValues?.description}
             className={`${formState?.errors?.description
-                ? "border-red-500 focus-visible:ring-red-500"
-                : ""
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
               }`}
           />
         </FormField>
@@ -146,8 +123,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             name="url"
             defaultValue={formState.fieldValues?.url}
             className={`${formState?.errors?.url
-                ? "border-red-500 focus-visible:ring-red-500"
-                : ""
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
               }`}
           />
         </FormField>
@@ -164,8 +141,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
                 : format(new Date(), "yyyy-MM-dd")
             }
             className={`${formState?.errors?.date
-                ? "border-red-500 focus-visible:ring-red-500"
-                : ""
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
               }`}
           />
         </FormField>
@@ -186,8 +163,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             <SelectContent
               id={"Platform"}
               className={`${formState?.errors?.platform
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : ""
+                ? "border-red-500 focus-visible:ring-red-500"
+                : ""
                 }`}
             >
               {PLATFORMS.map((platform) => (
@@ -211,8 +188,8 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             <SelectContent
               id={"Language"}
               className={`${formState?.errors?.language
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : ""
+                ? "border-red-500 focus-visible:ring-red-500"
+                : ""
                 }`}
             >
               <SelectItem value="English">English</SelectItem>
@@ -268,12 +245,12 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
                         alt={`Cover image for ${formState.fieldValues?.title}`}
                         width={100}
                         height={100}
-                        onLoad={() => console.log("Image loaded")} // Optional, for debugging
+                        onLoad={() => { }} // Optional, for debugging
                         className="object-cover aspect-video border border-gray-300 border-dashed rounded"
                       />
                       <div
                         className="absolute p-1 rounded-full cursor-pointer -right-3 -top-3 bg-red-50 group-hover:flex"
-                        onClick={() => setThumbnail(null)}
+                        onClick={() => setThumbnail("")}
                       >
                         <LuX className="size-4 text-red-500" />
                       </div>
@@ -318,3 +295,32 @@ const PLATFORMS = [
   { value: "nextbillion", label: "Nextbillion" },
   { value: "flycode", label: "FlyCode" },
 ];
+
+
+interface Tag {
+  id: string;
+  value: string;
+  label: string;
+}
+
+interface AddBlogProps {
+  tags: Tag[];
+  categories: Tag[];
+  blog: Blog | undefined;
+}
+
+interface Blog {
+  category: Tag | null;
+  tags: any;
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  url: string;
+  date: Date;
+  platform: string;
+  language: string;
+  categoryId: string;
+  tagId: string[];
+  thumbnail: string;
+}

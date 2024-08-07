@@ -20,11 +20,7 @@ export default async function uploadImage(file: File, fileName: string) {
   });
   const url = upload.secure_url.replace("/upload", "/upload/f_auto")
 
-  return {
-    success: true,
-    errors: null,
-    data: url,
-  };
+  return url;
 }
 // export default async function uploadImage(file: any) {
 //   const thumbnail = new FormData();
