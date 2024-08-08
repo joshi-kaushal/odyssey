@@ -1,8 +1,8 @@
-import { fetchAllBlogs, getBlogBySlug } from "@/lib/prisma/blog";
+import { fetchAllBlogs, getBlogBySlug } from "@/lib/prisma/blog/blog";
 import { notFound } from "next/navigation";
 import AddBlog from "../_components/add-blog";
-import { fetchCategories } from "@/lib/prisma/category";
-import { fetchTags } from "@/lib/prisma/tags";
+import { fetchCategories } from "@/lib/prisma/blog/category";
+import { fetchTags } from "@/lib/prisma/blog/tags";
 
 interface BlogSManagePageProps {
   params: { edit: string };

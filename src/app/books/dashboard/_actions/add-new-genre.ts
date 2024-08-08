@@ -1,7 +1,7 @@
 "use server"
 
 import addNewGenreToDB from "@/lib/prisma/books/genre";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma/blog/prisma";
 import { Genre, GenreSchema } from "@/lib/zod/GenreSchema";
 import { ZodError } from "zod";
 

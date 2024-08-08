@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { fetchAllBlogs } from "@/lib/prisma/blog";
+import { fetchAllBlogs } from "@/lib/prisma/blog/blog";
 import Link from "next/link";
 import DeleteBlogButton from "./_components/delete-blog";
 

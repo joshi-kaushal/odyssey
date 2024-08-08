@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Genre } from "@/lib/zod/GenreSchema";
-import FormField from "@/app/blog/_components/form-field";
+import FormField from "@/components/common/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Multiselect from "@/components/ui/select-create";

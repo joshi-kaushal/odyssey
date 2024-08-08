@@ -11,17 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "../../../components/ui/input";
-import addNewBlog from "@/actions/add-form";
+import addNewBlog from "@/app/blog/_actions/add-form";
 import Multiselect from "../../../components/ui/select-create";
-import { addCategory } from "@/lib/prisma/category";
-import { addTag } from "@/lib/prisma/tags";
+import { addCategory } from "@/lib/prisma/blog/category";
+import { addTag } from "@/lib/prisma/blog/tags";
 import { toast } from "sonner";
 import DragAndDrop from "../../../components/ui/drag-n-drop";
 import Image from "next/image";
 import { LuX } from "react-icons/lu";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
-import FormField from "./form-field";
+import FormField from "../../../components/common/form-field";
 import { Button } from "@/components/ui/button";
 
 export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
