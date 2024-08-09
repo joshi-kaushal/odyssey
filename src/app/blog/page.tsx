@@ -5,6 +5,7 @@ import DeleteBlogButton from "./_components/delete-blog";
 
 export default async function Page() {
   const blogs = await fetchAllBlogs();
+
   return (
     <>
       <div className="mt w-11/12 md:w-8/12 mx-auto">

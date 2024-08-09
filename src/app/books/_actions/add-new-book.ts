@@ -3,7 +3,7 @@
 import { BookSchema } from "@/lib/zod/Books";
 import { getBookByName } from "./add-new-genre";
 import { ZodError } from "zod";
-import addNewBookToDB from "@/lib/prisma/books/books";
+import { addNewBookToDB } from "@/lib/prisma/books/books";
 import prisma from "@/lib/prisma/blog/prisma";
 
 export default async function addNewBook(prevState: any, formData: any): Promise<any> {

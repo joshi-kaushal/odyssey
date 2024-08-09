@@ -88,16 +88,23 @@ export async function getBookByName(name: string) {
 
 	try {
 		const book = await prisma.book.findFirst({
-			where: { name: name }
+			where: { name: name },
+			include: {
+				authors: {
+					select: { value: true },
+				},
+				genre: {
+					select: { value: true },
+				},
+			},
 		})
 
 		if (book) {
-			// TODO: Give information about author and genre
 
 			return {
 				success: true,
 				errors: undefined,
-				data: { book }
+				data: book
 			}
 		} else {
 			return {

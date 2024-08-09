@@ -37,8 +37,8 @@ export default function AddNewBook({ genres, authors, book }: any) {
         errors: undefined,
         fieldValues: {
             name: book?.name || "",
-            authors: book?.authors || "",
-            genre: book?.genre || "",
+            authors: book?.authors.map((a: any) => a.value) || [],
+            genre: book?.genre?.value || "",
             status: book?.status || "",
             own: book?.own || "",
             language: book?.language || "",
@@ -47,6 +47,11 @@ export default function AddNewBook({ genres, authors, book }: any) {
         },
     });
 
+
+    console.log({
+        authors: formState.fieldValues.authors,
+        genre: formState.fieldValues.genre
+    })
     useEffect(() => {
         if (formState?.success) {
             toast.success("A new book has been added successfully.");
@@ -69,6 +74,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                         placeholder="name"
                         type="text"
                         name="name"
+                        required
                         defaultValue={formState?.fieldValues?.name || ""}
                         className={`${formState?.errors?.name
                             ? "border-red-500 focus-visible:ring-red-500"
@@ -110,6 +116,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                         type="date"
                         name="date"
                         id="date"
+                        required
                         defaultValue={
                             formState?.fieldValues?.date
                                 ? format(new Date(formState?.fieldValues.date), "yyyy-MM-dd")
@@ -131,6 +138,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                                 (o) => o.value === formState?.fieldValues?.own
                             )[0]?.value || BOOK_OWN_TYPE[0].value
                         }
+                        required
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="How do you own it?" />
@@ -156,6 +164,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                     <Select
                         name="language"
                         defaultValue="Marathi"
+                        required
                     // defaultValue={formState?.fieldValues?.language}
                     >
                         <SelectTrigger>
@@ -182,7 +191,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                         placeholder="Select genre"
                         options={genres}
                         name="genre"
-                        values={formState?.fieldValues?.category}
+                        values={formState?.fieldValues?.genre}
                     />
                 </FormField>
 
@@ -191,6 +200,7 @@ export default function AddNewBook({ genres, authors, book }: any) {
                     <Select
                         name="status"
                         defaultValue="no"
+                        required
                     // defaultValue={formState?.fieldValues?.status}
                     >
                         <SelectTrigger>
