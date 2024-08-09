@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react";
-import { Genre } from "@/lib/zod/GenreSchema";
+import { Genre } from "@/lib/zod/Books";
 import FormField from "@/components/common/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,7 @@ import { addNewGenre } from "../_actions/add-new-genre";
 
 export default function AddBookGenre({ genres }: { genres: Genre[] }) {
 	const formRef = useRef<HTMLFormElement>(null)
-	const genreOptions = genres.map(genre => {
-		return { id: genre.id!, value: genre.id!, label: genre.genre }
-	})
+
 
 	const { pending } = useFormStatus();
 	const [formState, formAction] = useFormState(addNewGenre, {
@@ -78,7 +76,7 @@ export default function AddBookGenre({ genres }: { genres: Genre[] }) {
 				<FormField name="Parent category" error={formState?.error?.parent}>
 					<Multiselect
 						placeholder="Select parent category"
-						options={genreOptions}
+						options={genres}
 						name="parent"
 						values={formState?.fieldValues?.parent}
 						onOptionChange={handleOnSelectedParentChange}

@@ -50,9 +50,32 @@ model Tags {
 
 model Genre {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  genre       String  @unique
+  label       String  @unique
+  value       String
   description String
+  books       Book[]
   parent      Genre?  @relation("GenreParent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   parentId    String? @db.ObjectId
   children    Genre[] @relation("GenreParent")
+}
+
+model Author {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  value  String
+  label  String
+  bookId String[] @db.ObjectId
+  books  Book[]   @relation(fields: [bookId], references: [id])
+}
+
+model Book {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  review   String
+  authors  Author[] @relation(fields: [authorId], references: [id])
+  authorId String[] @db.ObjectId
+  genreId  String   @db.ObjectId
+  genre    Genre    @relation(fields: [genreId], references: [id])
+  status   String
+  own      String
+  date     DateTime
 }

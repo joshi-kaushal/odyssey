@@ -6,7 +6,8 @@ export default async function addNewGenreToDB(data: any) {
     try {
         const res = await prisma.genre.create({
             data: {
-                genre: data.genre,
+                value: data.value,
+                label: data.label,
                 description: data.description,
                 ...(data.parent && { parent: { connect: { id: data.parent } } })
             }

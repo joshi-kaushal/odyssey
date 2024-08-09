@@ -1,5 +1,5 @@
 import { fetchAllGenres } from "@/lib/prisma/books/genre";
-import AddBookGenre from "./_components/add-book-genre";
+import AddBookGenre from "../_components/add-book-genre";
 
 export default async function BooksDashboardPage() {
     const genres = await fetchAllGenres();
