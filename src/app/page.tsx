@@ -1,6 +1,6 @@
 import AddBlog from "@/app/blog/_components/add-blog";
 import DragAndDrop from "@/components/ui/drag-n-drop";
-import { fetchAllBlogs } from "@/lib/prisma/blog";
+import { fetchAllBlogs } from "@/lib/prisma/blog/blog";
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 export default async function Home() {

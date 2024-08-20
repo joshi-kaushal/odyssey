@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { deleteBlogByID } from "@/lib/prisma/blog";
+import { deleteBlogByID } from "@/lib/prisma/blog/blog";
 import { toast } from "sonner";
 
 export default function DeleteBlogButton({ id }: { id: string }) {

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
+import { ActionMeta, MultiValue, SingleValue } from "react-select";
+
 const CreatableSelect = dynamic(() => import("react-select/creatable"), {
   ssr: false,
 });
@@ -19,6 +21,7 @@ interface MultiSelectProps {
   isMulti?: boolean;
   onCreateOption?: (inputValue: string) => Promise<Option | void>;
   name: string;
+  onOptionChange?: (value: any) => void
 }
 
 export default function Multiselect({
@@ -28,11 +31,13 @@ export default function Multiselect({
   values = [],
   isMulti = false,
   onCreateOption,
+  onOptionChange
 }: MultiSelectProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>(options);
   const [value, setValue] = useState<Option | Option[]>(values);
-  const handleCreate = async (inputValue: string) => {
+
+  const handleCreate = useCallback(async (inputValue: string) => {
     setIsLoading(true);
 
     if (onCreateOption) {
@@ -44,9 +49,17 @@ export default function Multiselect({
           : setValue(newOption);
       }
     }
-
     setIsLoading(false);
-  };
+  }, [onCreateOption, isMulti])
+
+  const handleChange = useCallback((
+    newValue: MultiValue<Option> | SingleValue<Option>,
+  ) => {
+    setValue(newValue as Option | Option[]);
+    if (onOptionChange) {
+      onOptionChange(newValue as Option);
+    }
+  }, [onOptionChange]);
 
   return (
     <CreatableSelect
@@ -58,7 +71,7 @@ export default function Multiselect({
       allowCreateWhileLoading={true}
       createOptionPosition="first"
       onCreateOption={handleCreate}
-      onChange={(newValue: any) => setValue(newValue)}
+      onChange={(newValue: any) => handleChange(newValue)}
       options={selectedOptions}
       value={value}
       closeMenuOnSelect={!isMulti}
