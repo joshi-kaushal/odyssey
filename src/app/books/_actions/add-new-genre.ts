@@ -1,7 +1,7 @@
 "use server"
 
 import addNewGenreToDB from "@/lib/prisma/books/genre";
-import prisma from "@/lib/prisma/blog/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { Genre, GenreSchema } from "@/lib/zod/Books";
 import { ZodError } from "zod";
 import kebabCase from "lodash.kebabcase";

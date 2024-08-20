@@ -1,7 +1,7 @@
 "use server";
 
 import uploadImage from "@/lib/cloudinary/upload-image";
-import { addNewBlogToDB, checkIfBlogAlreadyExists, deleteBlogByID, deleteBlogByURL } from "@/lib/prisma/blog/blog";
+import { addNewBlogToDB, checkIfBlogAlreadyExists, deleteBlogByURL } from "@/lib/prisma/blog/blog";
 import { BlogFields, BlogSchema } from "@/lib/zod/BlogSchema";
 import { ZodError } from "zod";
 
@@ -40,8 +40,8 @@ export default async function addNewBlog(
   }
 
   const doesBlogAlreadyExist = await checkIfBlogAlreadyExists(title, slug, url)
-  // if(doesBlogAlreadyExist) {
-  //    return {
+  // if (doesBlogAlreadyExist) {
+  //   return {
   //     success: false,
   //     errors: "Blog already exists in the database. You are using any of the title, slug or URL again.",
   //     data: undefined,

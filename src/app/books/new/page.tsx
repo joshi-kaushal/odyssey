@@ -2,16 +2,13 @@ import { fetchAllGenres } from "@/lib/prisma/books/genre";
 import AddNewBook from "../_components/add-new-book";
 import { fetchAllAuthors } from "@/lib/prisma/books/authors";
 import { getBookByName } from "../_actions/add-new-genre";
+import { ManagePageProps } from "@/types/common";
 
-interface BooksManagePageProps {
-	params: { edit: string };
-	searchParams?: { [key: string]: string | string[] | undefined };
-}
 
 export default async function Page({
 	params,
 	searchParams,
-}: BooksManagePageProps) {
+}: ManagePageProps) {
 
 	const book = searchParams?.edit && typeof searchParams.edit === "string"
 		? await getBookByName(searchParams.edit)

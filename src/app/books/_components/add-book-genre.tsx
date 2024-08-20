@@ -11,9 +11,8 @@ import { useFormState, useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { addNewGenre } from "../_actions/add-new-genre";
 
-export default function AddBookGenre({ genres }: { genres: Genre[] }) {
+export default function AddBookGenre({ genres }: { genres: any[] }) {
 	const formRef = useRef<HTMLFormElement>(null)
-
 
 	const { pending } = useFormStatus();
 	const [formState, formAction] = useFormState(addNewGenre, {

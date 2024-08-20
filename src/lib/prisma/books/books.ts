@@ -1,7 +1,7 @@
 "use server"
 
 import { formatISO, parseISO } from "date-fns"
-import prisma from "../blog/prisma"
+import prisma from "@/lib/prisma/prisma"
 
 export async function addNewBookToDB(data: any) {
 	try {
@@ -85,7 +85,7 @@ export async function fetchAllBooks() {
 
 }
 
-export async function DeleteBlogByName(name: string) {
+export async function deleteBlogByName(name: string) {
 	try {
 		const book = await prisma.book.findFirst({ where: { name } })
 		const deleted = await prisma.book.delete({

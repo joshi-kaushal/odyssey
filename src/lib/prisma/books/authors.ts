@@ -1,7 +1,7 @@
 "use server"
 
 import kebabCase from "lodash.kebabcase"
-import prisma from "../blog/prisma";
+import prisma from "@/lib/prisma/prisma";
 
 export async function addNewAuthor(label: string) {
     const value = kebabCase(label)

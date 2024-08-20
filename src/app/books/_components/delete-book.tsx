@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DeleteBlogByName } from "@/lib/prisma/books/books";
+import { deleteBlogByName } from "@/lib/prisma/books/books";
 import { toast } from "sonner";
 
 export default function DeleteBookButton({ name }: { name: string }) {
@@ -9,7 +9,7 @@ export default function DeleteBookButton({ name }: { name: string }) {
         const shouldDelete = confirm("Do you really want to delete this book?");
 
         if (shouldDelete) {
-            const deleteBook = await DeleteBlogByName(name);
+            const deleteBook = await deleteBlogByName(name);
 
             if (deleteBook?.success) {
                 toast.success("Book is deleted successfully!");

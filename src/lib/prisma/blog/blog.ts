@@ -1,10 +1,11 @@
 "use server";
-import { findCategoryById } from "./category";
-import prisma from "./prisma";
+
+import prisma from "@/lib/prisma/prisma";
 import { formatISO, parseISO } from "date-fns";
+import { findCategoryById } from "./category";
 import { findTagsById } from "./tags";
 
-export async function checkIfBlogAlreadyExists (title: string, slug: string, url: string): Promise<boolean> {
+export async function checkIfBlogAlreadyExists(title: string, slug: string, url: string): Promise<boolean> {
   const blog = await prisma.blog.findFirst({
     where: {
       OR: [
@@ -76,13 +77,13 @@ export async function addNewBlogToDB(data: any) {
 }
 
 export async function getBlogBySlug(slug: string) {
-  if(!slug) return undefined;
-  
+  if (!slug) return undefined;
+
   try {
     const blog = await prisma.blog.findFirst({
       where: { slug: slug },
     });
-    
+
     if (blog) {
       const category = await findCategoryById(blog.categoryId);
       const tags = await findTagsById(blog.tagId);
@@ -151,11 +152,11 @@ export async function deleteBlogByID(id: string) {
   }
 }
 
-export async function deleteBlogByURL(url:string) {
-   try {
+export async function deleteBlogByURL(url: string) {
+  try {
     const deleted = await prisma.blog.delete({
       where: {
-       url
+        url
       },
     });
 

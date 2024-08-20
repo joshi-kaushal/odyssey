@@ -19,7 +19,7 @@ export const GenreSchema = z.object({
     description: z.string().min(3, "Genre description should not be less than 3 characters"),
     parent: z.string().optional(),
     parentId: z.string().optional(),
-    books: z.array(BookSchema),
+    // books: z.array(BookSchema),
 })
 
 export const AuthorSchema = z.object({

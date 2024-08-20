@@ -1,6 +1,6 @@
 "use server"
 
-import prisma from "../blog/prisma"
+import prisma from "@/lib/prisma/prisma"
 
 export default async function addNewGenreToDB(data: any) {
     try {

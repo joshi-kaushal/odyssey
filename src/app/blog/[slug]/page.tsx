@@ -1,13 +1,11 @@
 import { getBlogBySlug } from "@/lib/prisma/blog/blog";
-import { NextPage } from "next";
+import { SlugPageProps } from "@/types/common";
 import Image from "next/image";
 import Link from "next/link";
 
-interface BlogSlugPageProps {
-  params: { slug: string };
-}
-export default async function Page({ params }: BlogSlugPageProps) {
+export default async function Page({ params }: SlugPageProps) {
   const data = await getBlogBySlug(params.slug);
+
   if (!data?.data || !data.success) {
     return (
       <section className="flex items-center flex-col gap-4 justify-center min-h-screen">

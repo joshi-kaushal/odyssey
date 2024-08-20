@@ -1,8 +1,8 @@
 "use server";
 
-import { Tags } from "@/types/tags";
-import prisma from "./prisma";
 import kebabCase from "lodash.kebabcase";
+import prisma from "@/lib/prisma/prisma";
+import { Tags } from "@/types/tags";
 
 export async function addTag(label: string) {
   const value = kebabCase(label);
