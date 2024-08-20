@@ -21,5 +21,3 @@ export default async function BooksDashboardPage() {
 		</div>
 	)
 }
-// ? ZOD:       id label value desc parentId book parent
-// ? Prisma:    id label value desc parentId

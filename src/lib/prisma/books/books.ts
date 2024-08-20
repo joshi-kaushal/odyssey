@@ -22,7 +22,7 @@ export async function addNewBookToDB(data: any) {
 		const authorsIDs = authors.map(author => author.id)
 
 		const date = formatISO(parseISO(data.date));
-		const response = await prisma.book.create({
+		const createdBook = await prisma.book.create({
 			data: {
 				name: data.name,
 				review: data.review,
@@ -35,12 +35,25 @@ export async function addNewBookToDB(data: any) {
 				genre: {
 					connect: { id: genre?.id }
 				}
+			},
+			include: {
+				genre: true
 			}
-		})
+		});
+
+		await prisma.genre.update({
+			where: { id: genre?.id },
+			data: {
+				books: {
+					connect: { id: createdBook.id }
+				}
+			}
+		});
+
 		return {
 			success: true,
 			errors: undefined,
-			data: response
+			data: createdBook
 		}
 	} catch (error) {
 		return {

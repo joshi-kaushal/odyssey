@@ -59,14 +59,6 @@ model Genre {
   children    Genre[] @relation("GenreParent")
 }
 
-model Author {
-  id     String   @id @default(auto()) @map("_id") @db.ObjectId
-  value  String
-  label  String
-  bookId String[] @db.ObjectId
-  books  Book[]   @relation(fields: [bookId], references: [id])
-}
-
 model Book {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   name     String
@@ -78,4 +70,11 @@ model Book {
   status   String
   own      String
   date     DateTime
+}
+model Author {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  value  String
+  label  String
+  bookId String[] @db.ObjectId
+  books  Book[]   @relation(fields: [bookId], references: [id])
 }
