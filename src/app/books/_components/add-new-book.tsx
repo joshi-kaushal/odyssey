@@ -47,11 +47,6 @@ export default function AddNewBook({ genres, authors, book }: any) {
         },
     });
 
-
-    console.log({
-        authors: formState.fieldValues.authors,
-        genre: formState.fieldValues.genre
-    })
     useEffect(() => {
         if (formState?.success) {
             toast.success("A new book has been added successfully.");

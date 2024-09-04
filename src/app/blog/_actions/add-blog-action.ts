@@ -24,7 +24,7 @@ export default async function addNewBlog(
   const language = formData.get("language") as string;
   const category = formData.get("category") as string;
   const tags = formData.getAll("tags") as string[];
-  const thumbnail = formData.get("thumbnail") as File;
+  const thumbnail = formData.get("thumbnail") as File | string;
   let thumbnailURL = "";
 
   if (!title || !url || !date || !platform) {

@@ -31,34 +31,32 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
   const { pending } = useFormStatus();
   const formRef = useRef<HTMLFormElement>(null);
 
+  const initialFieldValues = {
+    title: blog?.title || "",
+    slug: blog?.slug || "",
+    description: blog?.description || "",
+    url: blog?.url || "",
+    date: blog?.date ? format(new Date(blog.date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+    category: blog?.category,
+    language: blog?.language || "English",
+    platform: blog?.platform || PLATFORMS[0].value,
+    tags: blog?.tags,
+    thumbnail: thumbnail,
+  };
+
   const [formState, formAction] = useFormState(addNewBlog, {
     success: undefined,
     errors: undefined,
-    fieldValues: {
-      title: blog?.title || "",
-      slug: blog?.slug || "",
-      description: blog?.description || "",
-      url: blog?.url || "",
-      date: blog?.date || new Date(),
-      category: blog?.category,
-      language: blog?.language || "English",
-      platform: blog?.platform || PLATFORMS[0],
-      tags: blog?.tags,
-      thumbnail: thumbnail,
-    },
+    fieldValues: initialFieldValues,
   });
 
   useEffect(() => {
-    if (formState.success) {
-      if (blog?.title) {
-        toast.success("The blog has been edited.");
-        console.log(formState.fieldValues)
-      } else {
-        toast.success("A new blog has been added successfully.");
-      }
-    } else if (formState.errors) {
-      toast.error(formState.errors);
-      setThumbnail("")
+    if (formState?.success) {
+      toast.success(blog?.title ? "The blog has been edited." : "A new blog has been added successfully.");
+      if (!blog?.title) setThumbnail("");
+    } else if (formState?.errors) {
+      toast.error(JSON.stringify(formState.errors));
+      setThumbnail("");
     }
   }, [formState]);
 
@@ -76,7 +74,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             placeholder="Title"
             type="text"
             name="title"
-            defaultValue={formState.fieldValues?.title || ""}
+            defaultValue={formState?.fieldValues?.title}
             className={`${formState?.errors?.title
               ? "border-red-500 focus-visible:ring-red-500"
               : ""
@@ -91,7 +89,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             placeholder="Slug"
             type="text"
             name="slug"
-            defaultValue={formState.fieldValues?.slug}
+            defaultValue={formState?.fieldValues?.slug}
             className={`${formState?.errors?.slug
               ? "border-red-500 focus-visible:ring-red-500"
               : ""
@@ -101,17 +99,24 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
 
         {/* Description */}
         <FormField name={"Description"} error={formState?.errors?.description}>
-          <Textarea
-            id="Description"
-            placeholder="Description"
-            name="description"
-            rows={4}
-            defaultValue={formState.fieldValues?.description}
-            className={`${formState?.errors?.description
-              ? "border-red-500 focus-visible:ring-red-500"
-              : ""
-              }`}
-          />
+          <div className="relative">
+            <Textarea
+              id="Description"
+              placeholder="Description"
+              name="description"
+              rows={4}
+              defaultValue={formState?.fieldValues?.description}
+              className={`${formState?.errors?.description
+                ? "border-red-500 focus-visible:ring-red-500"
+                : ""
+                }`}
+            />
+            <div className="absolute right-0 -top-6">
+              <span className="text-xs text-neutral-500">
+                {formState?.fieldValues?.description?.length}/200
+              </span>
+            </div>
+          </div>
         </FormField>
 
         {/* URL */}
@@ -121,7 +126,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             placeholder="Published URL"
             type="text"
             name="url"
-            defaultValue={formState.fieldValues?.url}
+            defaultValue={formState?.fieldValues?.url}
             className={`${formState?.errors?.url
               ? "border-red-500 focus-visible:ring-red-500"
               : ""
@@ -137,7 +142,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             id="date"
             defaultValue={
               formState?.fieldValues?.date
-                ? format(new Date(formState.fieldValues.date), "yyyy-MM-dd")
+                ? format(new Date(formState?.fieldValues?.date), "yyyy-MM-dd")
                 : format(new Date(), "yyyy-MM-dd")
             }
             className={`${formState?.errors?.date
@@ -153,7 +158,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             name="platform"
             defaultValue={
               PLATFORMS.filter(
-                (p) => p.value === formState.fieldValues?.platform
+                (p) => p.value === formState?.fieldValues?.platform
               )[0]?.value
             }
           >
@@ -180,7 +185,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
         <FormField name={"Language"} error={formState?.errors?.language}>
           <Select
             name="language"
-            defaultValue={formState.fieldValues?.language}
+            defaultValue={formState?.fieldValues?.language}
           >
             <SelectTrigger>
               <SelectValue placeholder="Language" />
@@ -206,7 +211,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             options={categories}
             onCreateOption={addCategory}
             name="category"
-            values={formState.fieldValues?.category}
+            values={formState?.fieldValues?.category}
           />
         </FormField>
 
@@ -218,12 +223,12 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
             isMulti
             onCreateOption={addTag}
             name="tags"
-            values={formState.fieldValues?.tags}
+            values={formState?.fieldValues?.tags}
           />
         </FormField>
 
         {/* Thumbnail */}
-        <FormField name={"Thumbnail"} error={formState?.errors?.tagId}>
+        <FormField name={"Thumbnail"} error={formState?.errors?.thumbnail}>
           <DragAndDrop
             multiple={false}
             accept={{
@@ -242,18 +247,18 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
                       <Image
                         priority={false}
                         src={thumbnail as string}
-                        alt={`Cover image for ${formState.fieldValues?.title}`}
+                        alt={`Cover image for ${formState?.fieldValues?.title}`}
                         width={100}
                         height={100}
-                        onLoad={() => { }} // Optional, for debugging
                         className="object-cover aspect-video border border-gray-300 border-dashed rounded"
                       />
-                      <div
+                      <button
+                        type="button"
                         className="absolute p-1 rounded-full cursor-pointer -right-3 -top-3 bg-red-50 group-hover:flex"
                         onClick={() => setThumbnail("")}
                       >
                         <LuX className="size-4 text-red-500" />
-                      </div>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -266,7 +271,7 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
           </DragAndDrop>
         </FormField>
 
-        <RenderSubmitButton pending={pending} />
+        <RenderSubmitButton pending={pending} title={blog?.title || ""} />
       </form>
     </>
   );
@@ -274,12 +279,13 @@ export default function AddBlog({ tags, categories, blog }: AddBlogProps) {
 
 interface RenderSubmitButtonProps {
   pending: boolean;
+  title: string;
 }
 
-const RenderSubmitButton: React.FC<RenderSubmitButtonProps> = ({ pending }) => {
+const RenderSubmitButton: React.FC<RenderSubmitButtonProps> = ({ pending, title }) => {
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Adding..." : "Add a new blog"}
+      {pending ? "Adding..." : title ? "Update blog" : "Add a new blog"}
     </Button>
   );
 };
@@ -296,12 +302,13 @@ const PLATFORMS = [
   { value: "flycode", label: "FlyCode" },
 ];
 
-
 interface Tag {
   id: string;
   value: string;
   label: string;
 }
+
+const LANGUAGES = ["English", "Marathi", "Hindi"];
 
 interface AddBlogProps {
   tags: Tag[];

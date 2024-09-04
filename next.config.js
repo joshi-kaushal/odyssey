@@ -3,11 +3,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
       },
     ],
-  },}
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
