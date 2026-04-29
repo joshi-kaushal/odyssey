@@ -1,0 +1,14 @@
+services:
+  odyssey:
+    build: .
+    container_name: odyssey-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - odyssey-auth:/app/auth_info_baileys
+    env_file:
+      - .env
+
+volumes:
+  odyssey-auth:
