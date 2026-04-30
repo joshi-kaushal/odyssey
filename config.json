@@ -1,0 +1,25 @@
+{
+  "apps": {
+    "live_in_a_week": {
+      "webhook_url": "http://host.docker.internal:8001/webhook/whatsapp",
+      "description": "Personal task manager and weekly planner",
+      "webhook_secret": "LIAW_WEBHOOK_SECRET"
+    },
+    "bookmarks": {
+      "webhook_url": "http://host.docker.internal:8002/webhook",
+      "description": "Save and retrieve web bookmarks and links"
+    },
+    "personal_llm": {
+      "webhook_url": "http://host.docker.internal:8003/webhook",
+      "description": "General purpose personal AI assistant for questions and conversation"
+    }
+  },
+  "explicit_commands": {
+    "/task": "live_in_a_week",
+    "/today": "live_in_a_week",
+    "/week": "live_in_a_week",
+    "/done": "live_in_a_week",
+    "/otp": "live_in_a_week",
+    "/link": "bookmarks"
+  }
+}
