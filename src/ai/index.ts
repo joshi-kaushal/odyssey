@@ -1,5 +1,5 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { ClassificationResultSchema, ClassificationResult } from '../types/ai';
 import { OdysseyConfig } from '../types/config';
@@ -8,10 +8,8 @@ import pino from 'pino';
 
 const logger = pino({ level: 'info' });
 
-// Gemini Flash is chosen for low latency — classification is a single-turn task,
-// so a lighter model is preferable over a more capable but slower one.
 const model = new ChatGoogleGenerativeAI({
-  model: 'gemini-1.5-flash',
+  model: 'gemini-2.5-flash',
   apiKey: env.GEMINI_API_KEY,
 });
 
@@ -24,9 +22,6 @@ function buildClassifierPrompt(config: OdysseyConfig): string {
 
   const appKeys = Object.keys(config.apps).join(', ');
 
-  // The format instructions are baked into the prompt rather than using
-  // LangChain's StructuredOutputParser to avoid version compatibility issues
-  // with @langchain/google-genai's function-calling implementation.
   return `You are a message router for a personal WhatsApp assistant.
 Classify the user's message to determine which app should handle it.
 
@@ -50,26 +45,36 @@ export async function classifyMessage(
   text: string,
   config: OdysseyConfig
 ): Promise<ClassificationResult> {
-  const prompt = ChatPromptTemplate.fromMessages([
-    ['system', buildClassifierPrompt(config)],
-    ['human', '{message}'],
+  const systemPrompt = buildClassifierPrompt(config);
+  logger.info({ text, appCount: Object.keys(config.apps).length }, 'classifyMessage: invoking model');
+
+  // Use message objects directly — avoids LangChain's f-string template parser
+  // which breaks on literal { } in the system prompt JSON example.
+  const raw = await model.pipe(stringParser).invoke([
+    new SystemMessage(systemPrompt),
+    new HumanMessage(text),
   ]);
 
-  const chain = prompt.pipe(model).pipe(stringParser);
-  const raw = await chain.invoke({ message: text });
+  logger.info({ raw }, 'classifyMessage: raw model output');
 
-  // Strip markdown code fences if the model wraps its output — it sometimes does
-  // even when explicitly told not to.
   const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+  logger.info({ cleaned }, 'classifyMessage: cleaned output');
 
-  const parsed: unknown = JSON.parse(cleaned);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (e) {
+    logger.error({ cleaned, err: e }, 'classifyMessage: JSON parse failed');
+    throw new Error(`AI returned non-JSON output: ${cleaned}`);
+  }
+
   const result = ClassificationResultSchema.safeParse(parsed);
-
   if (!result.success) {
-    logger.error({ raw, error: result.error.message }, 'AI output failed Zod validation');
+    logger.error({ parsed, error: result.error.message }, 'classifyMessage: Zod validation failed');
     throw new Error(`Invalid AI classification output: ${result.error.message}`);
   }
 
+  logger.info({ intent: result.data.intent, app: result.data.app, confidence: result.data.confidence }, 'classifyMessage: success');
   return result.data;
 }
 

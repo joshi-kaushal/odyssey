@@ -96,8 +96,11 @@ async function connectToWhatsApp(): Promise<void> {
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
 
-      const jid = msg.key.remoteJid ?? '';
-      const from = jidNormalizedUser(jid).split('@')[0];
+      const from = msg.key.remoteJidAlt?.split("@")[0]
+      if (!from) {
+        logger.info("User message as follows: ", msg)
+        throw new Error(`Phone number not found. It is probably ${from} (Ignore if empty)`)
+      }
 
       const text =
         msg.message.conversation ??
@@ -117,7 +120,7 @@ async function connectToWhatsApp(): Promise<void> {
       logger.info({ from }, 'Routing inbound message');
 
       try {
-        await routeMessage(from, text);
+        await routeMessage(from, text, msg.pushName ?? undefined);
       } catch (err) {
         logger.error({ err }, 'Unhandled error in routeMessage');
       }

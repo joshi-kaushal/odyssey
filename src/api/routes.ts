@@ -62,8 +62,8 @@ export function createRouter(
    *             properties:
    *               to:
    *                 type: string
-   *                 description: Recipient phone number without + (e.g. 919876543210)
-   *                 example: "919876543210"
+   *                 description: Recipient phone number without + (e.g. 918082446387)
+   *                 example: "918082446387"
    *               text:
    *                 type: string
    *                 example: "Your task was saved!"

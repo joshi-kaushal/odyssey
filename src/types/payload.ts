@@ -7,6 +7,7 @@ export const WebhookPayloadSchema = z.object({
   app: z.string(),
   entities: z.record(z.string(), z.string()),
   timestamp: z.string(), // ISO 8601
+  push_name: z.string().optional(),
 });
 
 export type WebhookPayload = z.infer<typeof WebhookPayloadSchema>;

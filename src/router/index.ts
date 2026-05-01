@@ -27,7 +27,6 @@ async function forwardToApp(webhookUrl: string, payload: WebhookPayload, webhook
       headers['x-gateway-secret'] = webhookSecret;
     }
     await axios.post(webhookUrl, payload, { timeout: WEBHOOK_TIMEOUT_MS, headers });
-    logger.info({ app: payload.app, intent: payload.intent }, 'Forwarded to downstream app');
   } catch (err) {
     // A downstream app failing should never bring down the gateway.
     logger.error({ err, url: webhookUrl }, 'Failed to forward to downstream app');
@@ -46,19 +45,19 @@ async function reply(to: string, text: string): Promise<void> {
   }
 }
 
-export async function routeMessage(from: string, text: string): Promise<void> {
+export async function routeMessage(from: string, text: string, pushName?: string): Promise<void> {
   const config = loadConfig();
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
   const timestamp = new Date().toISOString();
-  
-  // --- Tier 1: Explicit command (fast path) ---
-  // Commands are deterministic — bypassing the AI keeps latency under 200ms.
+
+
+  // #region Tier 1: Explicit command (fast path)
   for (const [command, appKey] of Object.entries(config.explicit_commands)) {
     if (lower.startsWith(command.toLowerCase())) {
       const app = config.apps[appKey];
       if (!app) {
-        logger.warn({ command, appKey }, 'Explicit command maps to unknown app in config');
+        logger.warn({ command, appKey }, 'routeMessage: tier1 command maps to unknown app');
         return;
       }
 
@@ -69,17 +68,16 @@ export async function routeMessage(from: string, text: string): Promise<void> {
         app: appKey,
         entities: {},
         timestamp,
+        push_name: pushName,
       };
-
       setSession(from, appKey);
       await forwardToApp(app.webhook_url, payload, app.webhook_secret);
       return;
     }
   }
 
-  // --- Tier 2: Active session (continuation fast path) ---
-  // If the user was recently talking to an app, continue routing there
-  // to maintain conversational continuity without paying the AI latency cost.
+
+  // #region Tier 2: Active session (continuation fast path)
   const session = getSession(from);
   if (session) {
     const app = config.apps[session.lastApp];
@@ -91,6 +89,7 @@ export async function routeMessage(from: string, text: string): Promise<void> {
         app: session.lastApp,
         entities: {},
         timestamp,
+        push_name: pushName,
       };
 
       setSession(from, session.lastApp);
@@ -99,15 +98,14 @@ export async function routeMessage(from: string, text: string): Promise<void> {
     }
   }
 
-  // --- Tier 3: AI classification (fallback) ---
+  // #region AI classification (fallback)
   try {
     const result = await classifyMessage(trimmed, config);
-    logger.info({ intent: result.intent, app: result.app, confidence: result.confidence }, 'AI classified');
 
     if (result.confidence >= CONFIDENCE_THRESHOLD) {
       const app = config.apps[result.app];
       if (!app) {
-        logger.warn({ app: result.app }, 'AI resolved to unknown app key');
+        logger.warn({ app: result.app }, 'routeMessage: tier3 AI resolved unknown app key');
         await reply(from, "I'm not sure where to send that. Try a command like `/task` or `/link`.");
         return;
       }
@@ -119,13 +117,12 @@ export async function routeMessage(from: string, text: string): Promise<void> {
         app: result.app,
         entities: result.entities,
         timestamp,
+        push_name: pushName,
       };
 
-      // Update session so follow-up messages skip AI classification.
       setSession(from, result.app);
       await forwardToApp(app.webhook_url, payload, app.webhook_secret);
     } else {
-      // Confidence too low to route — try answering directly before giving up.
       const directAnswer = await answerDirectly(trimmed);
       if (directAnswer) {
         await reply(from, directAnswer);
@@ -134,7 +131,7 @@ export async function routeMessage(from: string, text: string): Promise<void> {
       }
     }
   } catch (err) {
-    logger.error({ err }, 'Routing error');
+    logger.error({ err }, 'routeMessage: tier3 error');
     await reply(from, 'Something went wrong. Please try again.');
   }
 }
