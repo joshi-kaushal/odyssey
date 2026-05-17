@@ -9,6 +9,10 @@ export const EnvSchema = z.object({
   SESSION_TTL_MINUTES: z.string().default('5'),
   WEBHOOK_TIMEOUT_MS: z.string().default('10000'),
   AI_CONFIDENCE_THRESHOLD: z.string().default('0.6'),
+
+  // Downstream app: Live in a Week
+  LIAW_WEBHOOK_URL: z.string().url(),
+  LIAW_WEBHOOK_SECRET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
