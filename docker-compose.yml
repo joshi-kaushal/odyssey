@@ -9,6 +9,13 @@ services:
       - odyssey-auth:/app/auth_info_baileys
     env_file:
       - .env
+    networks:
+      - default
+      - liaw-shared
 
 volumes:
   odyssey-auth:
+
+networks:
+  liaw-shared:
+    external: true
