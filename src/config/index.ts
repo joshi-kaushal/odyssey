@@ -18,6 +18,8 @@ const rawConfig: OdysseyConfig = {
     '/done': 'live_in_a_week',
     '/otp': 'live_in_a_week',
   },
+  // Commands handled entirely in-process — never forwarded to a webhook.
+  local_commands: ['/remind', '/help'],
 };
 
 // Validate once at startup so a typo here surfaces immediately, not on first message.

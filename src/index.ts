@@ -17,6 +17,7 @@ import qrcode from 'qrcode-terminal';
 import { env } from './config/env';
 import { loadConfig } from './config';
 import { routeMessage, setSendFn } from './router';
+import { setReminderSendFn } from './reminders';
 import { createRouter } from './api/routes';
 
 const logger = pino({ level: 'info' });
@@ -34,6 +35,9 @@ let connectionStatus: 'connected' | 'disconnected' = 'disconnected';
 const allowedNumbers = new Set(
   env.ALLOWED_NUMBERS.split(',').map((n) => n.trim())
 );
+// First whitelisted number is treated as the admin — receives alerts about
+// unauthorized senders so the gateway's existence stays hidden from them.
+const adminNumber = env.ALLOWED_NUMBERS.split(',').map((n) => n.trim())[0];
 
 async function sendMessage(to: string, text: string): Promise<void> {
   if (!sock) throw new Error('WhatsApp socket not initialised');
@@ -57,6 +61,7 @@ async function connectToWhatsApp(): Promise<void> {
 
   // Register the send function with the router so it can reply to users.
   setSendFn(sendMessage);
+  setReminderSendFn(sendMessage);
 
   sock.ev.on('creds.update', saveCreds);
 
@@ -96,10 +101,14 @@ async function connectToWhatsApp(): Promise<void> {
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
 
+      // Skip WhatsApp status/story broadcasts — they have no useful payload and
+      // can break the JID parsing below.
+      if ((msg.key.remoteJidAlt ?? '').endsWith('@broadcast')) continue;
+
       const from = msg.key.remoteJidAlt?.split("@")[0]
       if (!from) {
-        logger.info("User message as follows: ", msg)
-        throw new Error(`Phone number not found. It is probably ${from} (Ignore if empty)`)
+        logger.warn({ remoteJidAlt: msg.key.remoteJidAlt }, 'Could not resolve sender number — skipping');
+        continue;
       }
 
       const text =
@@ -111,9 +120,16 @@ async function connectToWhatsApp(): Promise<void> {
       if (!text) continue;
 
       // Silently drop non-whitelisted senders — no response avoids revealing
-      // that this gateway exists to unknown callers.
+      // that this gateway exists to unknown callers. Notify admin instead.
       if (!allowedNumbers.has(from)) {
         logger.warn({ from }, 'Message from non-whitelisted number — dropped');
+        if (adminNumber && adminNumber !== from) {
+          try {
+            await sendMessage(adminNumber, `Unauthorized number ${from} attempted to message the bot.`);
+          } catch (err) {
+            logger.error({ err, from }, 'Failed to send admin alert for unauthorized sender');
+          }
+        }
         continue;
       }
 

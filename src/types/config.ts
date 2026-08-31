@@ -11,6 +11,7 @@ export const AppConfigSchema = z.object({
 export const OdysseyConfigSchema = z.object({
   apps: z.record(z.string(), AppConfigSchema),
   explicit_commands: z.record(z.string(), z.string()),
+  local_commands: z.array(z.string()),
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;

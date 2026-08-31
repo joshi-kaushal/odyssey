@@ -5,6 +5,9 @@ import { env } from '../config/env';
 import { getSession, setSession } from '../session';
 import { classifyMessage, answerDirectly } from '../ai';
 import { WebhookPayload } from '../types/payload';
+import { parseDurationToMinutes, parseDateShortcut } from '../reminders/duration';
+import { addReminder } from '../reminders';
+import crypto from 'crypto';
 
 const logger = pino({ level: 'info' });
 
@@ -18,6 +21,107 @@ let sendWhatsAppMessage: ((to: string, text: string) => Promise<void>) | null = 
 export function setSendFn(fn: (to: string, text: string) => Promise<void>): void {
   sendWhatsAppMessage = fn;
 }
+
+type LocalCommand = {
+  pattern: RegExp | string;
+  handler: (from: string, text: string, pushName?: string) => Promise<void>;
+};
+
+const localCommands: LocalCommand[] = [
+  {
+    pattern: /^\/remind\s/i,
+    handler: async (from, text) => {
+      const send = sendWhatsAppMessage;
+      if (!send) return;
+
+      // Syntax: /remind <date-or-duration> <text...>
+      // Date shortcuts: tomorrow, tmrw, nextweek, nextmonth, 7d, 29days
+      // Duration: 30 min, 2h, 1 day 3h
+      // Date + time: tomorrow 5pm, nextweek 10am
+      const match = text.match(/^\/remind\s+(\S+)\s+(.+)/i);
+      if (!match) {
+        const usage = `*Usage:* /remind <date-or-duration> <text>
+• /remind tomorrow 5pm team standup
+• /remind 30 min buy milk
+• /remind nextweek review doc`;
+        await send(from, usage);
+        return;
+      }
+
+      const [, datetimePart, reminderText] = match;
+
+      // Try date shortcut first (e.g. "tomorrow 5pm", "nextweek", "7d")
+      const dateResult = parseDateShortcut(datetimePart);
+      if (dateResult !== null) {
+        const jobId = crypto.randomUUID();
+        addReminder(jobId, { at: dateResult.getTime(), text: reminderText.trim(), to: from });
+        await send(from, `Reminder set for ${reminderText.trim()}.`);
+        return;
+      }
+
+      // Fall back to duration (e.g. "30 min", "2h", "1 day")
+      const minutes = parseDurationToMinutes(datetimePart);
+      if (minutes === null) {
+        await send(from, 'Could not parse that date or duration. Try "tomorrow 5pm", "30 min", or "7d".');
+        return;
+      }
+
+      const jobId = crypto.randomUUID();
+      const at = Date.now() + minutes * 60_000;
+      addReminder(jobId, { at, text: reminderText.trim(), to: from });
+      await send(from, `Reminder set for ${reminderText.trim()}.`);
+    },
+  },
+  {
+    // Matches both `/help` and `/help <service>` (captures the optional service name).
+    pattern: /^\/help(?:\s+(\S+))?$/i,
+    handler: async (from, text, pushName) => {
+      const send = sendWhatsAppMessage;
+      if (!send) return;
+
+      const serviceMatch = text.match(/^\/help\s+(\S+)/i);
+      const config = loadConfig();
+
+      // /help <service> — forward to that service's webhook.
+      if (serviceMatch) {
+        const requested = serviceMatch[1].toLowerCase();
+        const app = config.apps[requested];
+        if (app) {
+          const payload: WebhookPayload = {
+            from,
+            raw_text: '/help',
+            intent: '/help',
+            app: requested,
+            entities: {},
+            timestamp: new Date().toISOString(),
+            push_name: pushName,
+          };
+          await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+          return;
+        } else {
+          const available = Object.keys(config.apps).join(', ');
+          await send(from, `Unknown service "${requested}". Available: ${available}`);
+          return;
+        }
+      }
+
+      // /help — show Odyssey commands + onboarded services.
+      const services = Object.entries(config.apps)
+        .map(([key, app]) => `• /help ${key} — ${app.description}`)
+        .join('\n');
+
+      const helpText = `*Odyssey Bot* 🗺️
+
+Available commands:
+• /remind <date-or-duration> <text> — set a one-off reminder
+• /help — show this message
+
+Services:
+${services}`.trim();
+      await send(from, helpText);
+    },
+  },
+];
 
 async function forwardToApp(webhookUrl: string, payload: WebhookPayload, webhookSecret?: string): Promise<void> {
   try {
@@ -51,6 +155,17 @@ export async function routeMessage(from: string, text: string, pushName?: string
   const lower = trimmed.toLowerCase();
   const timestamp = new Date().toISOString();
 
+
+  // #region Tier 0: Local commands (in-process — not forwarded to a webhook)
+  for (const cmd of localCommands) {
+    if (
+      (cmd.pattern instanceof RegExp && cmd.pattern.test(trimmed)) ||
+      (typeof cmd.pattern === 'string' && lower.startsWith(cmd.pattern.toLowerCase()))
+    ) {
+      await cmd.handler(from, trimmed, pushName);
+      return;
+    }
+  }
 
   // #region Tier 1: Explicit command (fast path)
   for (const [command, appKey] of Object.entries(config.explicit_commands)) {
