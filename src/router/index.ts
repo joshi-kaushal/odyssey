@@ -107,14 +107,14 @@ const localCommands: LocalCommand[] = [
 
       // /help — show Odyssey commands + onboarded services.
       const services = Object.entries(config.apps)
-        .map(([key, app]) => `• /help ${key} — ${app.description}`)
+        .map(([key, app]) => `• \`/help ${key}\` — ${app.description}`)
         .join('\n');
 
       const helpText = `*Odyssey Bot* 🗺️
 
 Available commands:
-• /remind <date-or-duration> <text> — set a one-off reminder
-• /help — show this message
+•	\`/remind <date-or-duration> <text>\` — set a one-off reminder
+• \`/help\` — show this message
 
 Services:
 ${services}`.trim();
@@ -130,6 +130,7 @@ async function forwardToApp(webhookUrl: string, payload: WebhookPayload, webhook
       // Each downstream app can verify this header to authenticate the call is from Odyssey.
       headers['x-gateway-secret'] = webhookSecret;
     }
+    logger.info("Forwarding to downstream app: ", { webhookUrl, payload, headers })
     await axios.post(webhookUrl, payload, { timeout: WEBHOOK_TIMEOUT_MS, headers });
   } catch (err) {
     // A downstream app failing should never bring down the gateway.
