@@ -24,7 +24,7 @@ export function setSendFn(fn: (to: string, text: string) => Promise<void>): void
 
 type LocalCommand = {
   pattern: RegExp | string;
-  handler: (from: string, text: string, pushName?: string) => Promise<void>;
+  handler: (from: string, text: string, pushName: string | undefined, allowedServices: string[], isAdmin: boolean) => Promise<void>;
 };
 
 const localCommands: LocalCommand[] = [
@@ -75,7 +75,7 @@ const localCommands: LocalCommand[] = [
   {
     // Matches both `/help` and `/help <service>` (captures the optional service name).
     pattern: /^\/help(?:\s+(\S+))?$/i,
-    handler: async (from, text, pushName) => {
+    handler: async (from, text, pushName, allowedServices, isAdmin) => {
       const send = sendWhatsAppMessage;
       if (!send) return;
 
@@ -87,6 +87,10 @@ const localCommands: LocalCommand[] = [
         const requested = serviceMatch[1].toLowerCase();
         const app = config.apps[requested];
         if (app) {
+          if (allowedServices.length > 0 && !allowedServices.includes(requested)) {
+            await send(from, `You don't have access to the \`${requested}\` service.`);
+            return;
+          }
           const payload: WebhookPayload = {
             from,
             raw_text: '/help',
@@ -105,36 +109,53 @@ const localCommands: LocalCommand[] = [
         }
       }
 
-      // /help — show Odyssey commands + onboarded services.
+      // /help — show Odyssey commands + onboarded services the user can access.
       const services = Object.entries(config.apps)
+        .filter(([key]) => allowedServices.length === 0 || allowedServices.includes(key))
         .map(([key, app]) => `• \`/help ${key}\` — ${app.description}`)
         .join('\n');
 
-      const helpText = `*Odyssey Bot* 🗺️
+      let helpText = `*Odyssey Bot* 🗺️
 
 Available commands:
 •	\`/remind <date-or-duration> <text>\` — set a one-off reminder
 • \`/help\` — show this message
 
 Services:
-${services}`.trim();
-      await send(from, helpText);
+${services}`;
+
+      if (isAdmin) {
+        helpText += `
+
+Admin commands:
+• \`/generate-key <name>\` — create an invite key
+• \`/keys\` — list all keys and their status
+• \`/users\` — list all users with key names
+• \`/revoke <phone>\` — revoke a user's access
+• \`/extend <phone> <hours>\` — extend a user's trial`;
+      }
+
+      await send(from, helpText.trim());
     },
   },
 ];
 
-async function forwardToApp(webhookUrl: string, payload: WebhookPayload, webhookSecret?: string): Promise<void> {
+async function forwardToApp(webhookUrl: string, payload: WebhookPayload, webhookSecret?: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (webhookSecret) {
-      // Each downstream app can verify this header to authenticate the call is from Odyssey.
       headers['x-gateway-secret'] = webhookSecret;
     }
-    logger.info("Forwarding to downstream app: ", { webhookUrl, payload, headers })
     await axios.post(webhookUrl, payload, { timeout: WEBHOOK_TIMEOUT_MS, headers });
-  } catch (err) {
-    // A downstream app failing should never bring down the gateway.
+    return { ok: true };
+  } catch (err: any) {
     logger.error({ err, url: webhookUrl }, 'Failed to forward to downstream app');
+    const errorMsg = err.code === 'ECONNREFUSED'
+      ? 'Service is unreachable'
+      : err.code === 'ETIMEDOUT' || err.message?.includes('timeout')
+        ? 'Service timed out'
+        : 'Service error';
+    return { ok: false, error: errorMsg };
   }
 }
 
@@ -150,11 +171,16 @@ async function reply(to: string, text: string): Promise<void> {
   }
 }
 
-export async function routeMessage(from: string, text: string, pushName?: string): Promise<void> {
+export async function routeMessage(from: string, text: string, pushName?: string, allowedServices: string[] = [], isAdmin = false): Promise<void> {
   const config = loadConfig();
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
   const timestamp = new Date().toISOString();
+
+  const canUse = (appKey: string): boolean => {
+    // Empty allowedServices means full access (admin / unrestricted).
+    return allowedServices.length === 0 || allowedServices.includes(appKey);
+  };
 
 
   // #region Tier 0: Local commands (in-process — not forwarded to a webhook)
@@ -163,7 +189,7 @@ export async function routeMessage(from: string, text: string, pushName?: string
       (cmd.pattern instanceof RegExp && cmd.pattern.test(trimmed)) ||
       (typeof cmd.pattern === 'string' && lower.startsWith(cmd.pattern.toLowerCase()))
     ) {
-      await cmd.handler(from, trimmed, pushName);
+      await cmd.handler(from, trimmed, pushName, allowedServices, isAdmin);
       return;
     }
   }
@@ -177,6 +203,11 @@ export async function routeMessage(from: string, text: string, pushName?: string
         return;
       }
 
+      if (!canUse(appKey)) {
+        await reply(from, `You don't have access to the \`${appKey}\` service.`);
+        return;
+      }
+
       const payload: WebhookPayload = {
         from,
         raw_text: trimmed,
@@ -187,7 +218,10 @@ export async function routeMessage(from: string, text: string, pushName?: string
         push_name: pushName,
       };
       setSession(from, appKey);
-      await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      const result = await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      if (!result.ok) {
+        await reply(from, `⚠️ ${result.error}. Your message was not delivered. Try again later.`);
+      }
       return;
     }
   }
@@ -209,7 +243,10 @@ export async function routeMessage(from: string, text: string, pushName?: string
       };
 
       setSession(from, session.lastApp);
-      await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      const result = await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      if (!result.ok) {
+        await reply(from, `⚠️ ${result.error}. Your message was not delivered. Try again later.`);
+      }
       return;
     }
   }
@@ -226,6 +263,11 @@ export async function routeMessage(from: string, text: string, pushName?: string
         return;
       }
 
+      if (!canUse(result.app)) {
+        await reply(from, `You don't have access to the \`${result.app}\` service.`);
+        return;
+      }
+
       const payload: WebhookPayload = {
         from,
         raw_text: result.raw_text,
@@ -237,7 +279,10 @@ export async function routeMessage(from: string, text: string, pushName?: string
       };
 
       setSession(from, result.app);
-      await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      const result2 = await forwardToApp(app.webhook_url, payload, app.webhook_secret);
+      if (!result2.ok) {
+        await reply(from, `⚠️ ${result2.error}. Your message was not delivered. Try again later.`);
+      }
     } else {
       const directAnswer = await answerDirectly(trimmed);
       if (directAnswer) {

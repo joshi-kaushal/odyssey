@@ -16,11 +16,13 @@ FROM node:20-alpine AS runtime
 
 WORKDIR /app
 
-# Only production deps in the final image.
+# Production deps + drizzle-kit for migrations at startup (prestart hook).
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm install drizzle-kit
 
 COPY --from=builder /app/dist ./dist
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
 
 EXPOSE 3000
 

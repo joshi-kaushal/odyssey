@@ -19,6 +19,19 @@ import { loadConfig } from './config';
 import { routeMessage, setSendFn } from './router';
 import { setReminderSendFn } from './reminders';
 import { createRouter } from './api/routes';
+import {
+  getUser,
+  activateUser,
+  isTrialExpired,
+  checkRateLimit,
+  recordMessage,
+  isKeyValid,
+  createKey,
+  listKeys,
+  listUsersWithKeys,
+  deleteUser,
+  extendTrial,
+} from './users';
 
 const logger = pino({ level: 'info' });
 
@@ -32,12 +45,77 @@ let sock: WASocket | null = null;
 let connectionStatus: 'connected' | 'disconnected' = 'disconnected';
 
 // Parsed once — used in the hot path for every inbound message.
-const allowedNumbers = new Set(
-  env.ALLOWED_NUMBERS.split(',').map((n) => n.trim())
-);
 // First whitelisted number is treated as the admin — receives alerts about
-// unauthorized senders so the gateway's existence stays hidden from them.
+// unauthorized senders and can run admin commands (/generate-key, /users, etc).
 const adminNumber = env.ALLOWED_NUMBERS.split(',').map((n) => n.trim())[0];
+
+async function handleAdminCommand(from: string, text: string): Promise<boolean> {
+  const trimmed = text.trim();
+  const send = sendMessage;
+
+  // /generate-key <name> — name required, single word (letters, numbers, - or _)
+  const genMatch = trimmed.match(/^\/generate-key\s+(\S+)$/i);
+  if (genMatch) {
+    const name = genMatch[1];
+    try {
+      const { code } = await createKey(name);
+      await send(from, `Generated invite key: \`${code}\`\nSaved as: ${name}\nShare it with a friend. All services included, trial starts on first use.`);
+    } catch (e: any) {
+      await send(from, e.message);
+    }
+    return true;
+  }
+
+  // /keys — list all keys with status
+  if (/^\/keys$/i.test(trimmed)) {
+    const keys = await listKeys();
+    if (keys.length === 0) {
+      await send(from, 'No keys yet.');
+      return true;
+    }
+    const lines = keys.map((k) => {
+      const status = k.used ? `USED (by ${k.usedBy ?? '?'})` : 'available';
+      const usedAt = k.usedAt ? ` @ ${k.usedAt.toISOString().split('T')[0]}` : '';
+      return `• ${k.name} | ${k.code} | ${status}${usedAt}`;
+    });
+    await send(from, `*Keys (${keys.length})*\n${lines.join('\n')}`);
+    return true;
+  }
+
+  // /users — list all users with their key name
+  if (/^\/users$/i.test(trimmed)) {
+    const users = await listUsersWithKeys();
+    if (users.length === 0) {
+      await send(from, 'No users yet.');
+      return true;
+    }
+    const lines = users.map((u) => {
+      const status = isTrialExpired(u) ? 'EXPIRED' : 'active';
+      return `• ${u.phone} | key: ${u.betaKey} (${u.keyName}) | ${status} | msgs: ${u.messageCount} | services: ${u.services.join(',')}`;
+    });
+    await send(from, `*Users (${users.length})*\n${lines.join('\n')}`);
+    return true;
+  }
+
+  // /revoke <phone>
+  const revokeMatch = trimmed.match(/^\/revoke\s+(\d+)$/i);
+  if (revokeMatch) {
+    const ok = await deleteUser(revokeMatch[1]);
+    await send(from, ok ? `Revoked access for ${revokeMatch[1]}.` : `No user found for ${revokeMatch[1]}.`);
+    return true;
+  }
+
+  // /extend <phone> <hours>
+  const extendMatch = trimmed.match(/^\/extend\s+(\d+)\s+(\d+)$/i);
+  if (extendMatch) {
+    const [ , phone, hours ] = extendMatch;
+    const ok = await extendTrial(phone, parseInt(hours, 10));
+    await send(from, ok ? `Extended ${phone} by ${hours}h.` : `No user found for ${phone}.`);
+    return true;
+  }
+
+  return false;
+}
 
 async function sendMessage(to: string, text: string): Promise<void> {
   if (!sock) throw new Error('WhatsApp socket not initialised');
@@ -119,26 +197,72 @@ async function connectToWhatsApp(): Promise<void> {
 
       if (!text) continue;
 
-      // Silently drop non-whitelisted senders — no response avoids revealing
-      // that this gateway exists to unknown callers. Notify admin instead.
-      if (!allowedNumbers.has(from)) {
-        logger.warn({ from }, 'Message from non-whitelisted number — dropped');
-        if (adminNumber && adminNumber !== from) {
-          try {
-            await sendMessage(adminNumber, `Unauthorized number ${from} attempted to message the bot.`);
-          } catch (err) {
-            logger.error({ err, from }, 'Failed to send admin alert for unauthorized sender');
-          }
+      logger.info({ from }, 'Routing inbound message');
+
+      // Admin path — skip user checks, allow admin commands, full service access.
+      if (from === adminNumber) {
+        const handled = await handleAdminCommand(from, text);
+        if (handled) continue;
+        try {
+          await routeMessage(from, text, msg.pushName ?? undefined, [], true);
+        } catch (err) {
+          logger.error({ err }, 'Unhandled error in routeMessage');
         }
         continue;
       }
 
-      logger.info({ from }, 'Routing inbound message');
-
+      // Regular user path — validate access before routing.
       try {
-        await routeMessage(from, text, msg.pushName ?? undefined);
+        const user = await getUser(from);
+
+        // Not registered. If the message is an unused beta key, activate them;
+        // otherwise stay silent unless they're a known-but-unregistered contact
+        // who clearly wants in (invite them). We only reply to beta keys here —
+        // unknown strangers get dropped to avoid revealing the bot's existence.
+        if (!user) {
+          const keyRow = await isKeyValid(text);
+          if (keyRow) {
+            const userName = keyRow.name;
+            await activateUser(from, text);
+            logger.info({ from }, 'User activated via beta key');
+            await sendMessage(from, `Welcome aboard! 🎉 Your trial is now active. Type /help to see what I can do.`);
+            // Notify admin that a user has onboarded
+            try {
+              await sendMessage(adminNumber, `${userName}'s trial is now active (${from})`);
+            } catch (err) {
+              logger.error({ err }, 'Failed to notify admin of user activation');
+            }
+          }
+          continue;
+        }
+
+        // Trial expired.
+        if (isTrialExpired(user)) {
+          await sendMessage(from, `Your trial has expired. Please contact admin to continue.`);
+          continue;
+        }
+
+        // Rate limit.
+        const rate = checkRateLimit(user);
+        if (!rate.allowed) {
+          await sendMessage(from, rate.reason ?? 'Slow down.');
+          continue;
+        }
+
+        await recordMessage(user);
+
+        try {
+          await routeMessage(from, text, msg.pushName ?? undefined, user.services, false);
+        } catch (err) {
+          logger.error({ err }, 'Unhandled error in routeMessage');
+        }
       } catch (err) {
-        logger.error({ err }, 'Unhandled error in routeMessage');
+        logger.error({ err, from }, 'Unhandled error in user validation');
+        try {
+          await sendMessage(from, 'Something went wrong. Please try again.');
+        } catch (sendErr) {
+          logger.error({ sendErr }, 'Failed to send error reply');
+        }
       }
     }
   });
