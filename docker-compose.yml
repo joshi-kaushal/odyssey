@@ -12,10 +12,13 @@ services:
     networks:
       - default
       - liaw-shared
+      - keep
 
 volumes:
   odyssey-auth:
 
 networks:
   liaw-shared:
+    external: true
+  keep:
     external: true

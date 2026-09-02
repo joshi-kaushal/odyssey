@@ -5,18 +5,25 @@ import { OdysseyConfigSchema, OdysseyConfig } from '../types/config';
 // stay in env; descriptions and command routes live here as source.
 const rawConfig: OdysseyConfig = {
   apps: {
-    live_in_a_week: {
+    liaw: {
       webhook_url: env.LIAW_WEBHOOK_URL,
       description: 'Personal task manager and weekly planner',
       webhook_secret: env.LIAW_WEBHOOK_SECRET,
     },
+    keep: {
+      webhook_url: env.NOTES_WEBHOOK_URL,
+      description: 'Save notes, links, bookmarks and random texts',
+      webhook_secret: env.NOTES_WEBHOOK_SECRET,
+    },
   },
   explicit_commands: {
-    '/task': 'live_in_a_week',
-    '/today': 'live_in_a_week',
-    '/week': 'live_in_a_week',
-    '/done': 'live_in_a_week',
-    '/otp': 'live_in_a_week',
+    '/task': 'liaw',
+    '/today': 'liaw',
+    '/week': 'liaw',
+    '/done': 'liaw',
+    '/otp': 'liaw',
+    '/keep': 'keep',
+    '/list': 'keep',
   },
   // Commands handled entirely in-process — never forwarded to a webhook.
   local_commands: ['/remind', '/help'],

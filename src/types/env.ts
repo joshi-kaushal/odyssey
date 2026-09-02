@@ -13,6 +13,10 @@ export const EnvSchema = z.object({
   // Downstream app: Live in a Week
   LIAW_WEBHOOK_URL: z.string().url(),
   LIAW_WEBHOOK_SECRET: z.string().min(1),
+
+  // Downstream app: keep (notes/links/voice)
+  NOTES_WEBHOOK_URL: z.string().url(),
+  NOTES_WEBHOOK_SECRET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
