@@ -19,6 +19,7 @@ import { loadConfig } from './config';
 import { routeMessage, setSendFn } from './router';
 import { setReminderSendFn } from './reminders';
 import { createRouter } from './api/routes';
+import { runMigrations } from './db';
 import {
   getUser,
   activateUser,
@@ -275,7 +276,18 @@ loadConfig();
 const apiRouter = createRouter(() => connectionStatus, sendMessage);
 app.use('/', apiRouter);
 
-app.listen(parseInt(env.PORT, 10), () => {
-  logger.info({ port: env.PORT }, 'Odyssey server started');
-  connectToWhatsApp();
-});
+async function startServer() {
+  try {
+    await runMigrations();
+  } catch (err) {
+    logger.fatal({ err }, 'Failed to apply database migrations. Exiting process.');
+    process.exit(1);
+  }
+
+  app.listen(parseInt(env.PORT, 10), () => {
+    logger.info({ port: env.PORT }, 'Odyssey server started');
+    connectToWhatsApp();
+  });
+}
+
+startServer();
