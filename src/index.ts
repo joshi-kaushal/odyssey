@@ -60,7 +60,10 @@ async function handleAdminCommand(from: string, text: string): Promise<boolean> 
     const name = genMatch[1];
     try {
       const { code } = await createKey(name);
-      await send(from, `Generated invite key: \`${code}\`\nSaved as: ${name}\nShare it with a friend. All services included, trial starts on first use.`);
+      const botJid = sock?.user?.id;
+      const botNumber = botJid ? botJid.split(':')[0].replace(/@.*/, '') : 'this number';
+      const message = `Welcome aboard, ${name}! 🎉\nYour invite code is \`${code}\`.\n\nYou can message at *${botNumber}* to activate your 24 hour trial. Enter \`/help\` for more information.`;
+      await send(from, message);
     } catch (e: any) {
       await send(from, e.message);
     }
@@ -109,7 +112,7 @@ async function handleAdminCommand(from: string, text: string): Promise<boolean> 
   // /extend <phone> <hours>
   const extendMatch = trimmed.match(/^\/extend\s+(\d+)\s+(\d+)$/i);
   if (extendMatch) {
-    const [ , phone, hours ] = extendMatch;
+    const [, phone, hours] = extendMatch;
     const ok = await extendTrial(phone, parseInt(hours, 10));
     await send(from, ok ? `Extended ${phone} by ${hours}h.` : `No user found for ${phone}.`);
     return true;
