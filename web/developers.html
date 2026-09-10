@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odyssey | Developer Guide</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: { 50: '#f8f7ff', 100: '#f0eeff', 800: '#1a1625', 900: '#110e1a', 950: '#0a0812' },
+            accent: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0a0812; }
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f0abfc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block { font-family: 'Menlo', 'Monaco', 'Consolas', monospace; }
+    .step-num { position: relative; }
+    .step-num::before {
+      content: '';
+      position: absolute;
+      top: 2.5rem;
+      left: 1.25rem;
+      width: 2px;
+      height: calc(100% + 2rem);
+      background: linear-gradient(180deg, #7c3aed, transparent);
+    }
+    @media (max-width: 768px) {
+      .step-num::before { display: none; }
+    }
+  </style>
+</head>
+<body class="text-gray-300 antialiased">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-surface-950/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition-colors text-sm font-medium">
+        <span>←</span>
+        <span>Back to Odyssey</span>
+      </a>
+      <span class="text-gray-600 text-sm">Developer Guide</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-32 pb-20 px-6 text-center">
+    <div class="text-5xl mb-6">🛠️</div>
+    <h1 class="text-4xl md:text-5xl font-bold gradient-text mb-4">Build for Odyssey</h1>
+    <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+      Extend Odyssey with your own service. Connect a new microservice and it becomes accessible through WhatsApp in minutes.
+    </p>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture" class="py-16 px-6 bg-surface-900/50">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-8">Architecture</h2>
+      <p class="text-gray-400 mb-8">Odyssey uses a webhook-based architecture. Your service receives messages via HTTP and replies through a simple egress API.</p>
+      <!-- Flow diagram -->
+      <div class="bg-surface-950 border border-white/5 rounded-2xl p-8">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-2">👤</div>
+            <span class="text-white text-sm font-medium">User</span>
+            <span class="text-gray-500 text-xs">WhatsApp message</span>
+          </div>
+          <div class="text-accent-400 text-2xl rotate-90 md:rotate-0">→</div>
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-2">🧭</div>
+            <span class="text-white text-sm font-medium">Odyssey</span>
+            <span class="text-gray-500 text-xs">Routes to your app</span>
+          </div>
+          <div class="text-accent-400 text-2xl rotate-90 md:rotate-0">→</div>
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-2">📦</div>
+            <span class="text-white text-sm font-medium">Your Service</span>
+            <span class="text-gray-500 text-xs">Processes request</span>
+          </div>
+          <div class="text-accent-400 text-2xl rotate-90 md:rotate-0">→</div>
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-2">📤</div>
+            <span class="text-white text-sm font-medium">Egress API</span>
+            <span class="text-gray-500 text-xs">POST /send</span>
+          </div>
+          <div class="text-accent-400 text-2xl rotate-90 md:rotate-0">→</div>
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 rounded-xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-2">💬</div>
+            <span class="text-white text-sm font-medium">WhatsApp</span>
+            <span class="text-gray-500 text-xs">User sees reply</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Contract -->
+  <section id="contract" class="py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">The Contract</h2>
+      <p class="text-gray-400 mb-10">Two things matter: what Odyssey sends you, and how you reply back.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Ingress -->
+        <div class="bg-surface-900 border border-white/5 rounded-2xl p-8">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">📥</span>
+            <h3 class="text-white font-bold text-lg">Ingress: What you receive</h3>
+          </div>
+          <p class="text-gray-400 text-sm mb-4">Odyssey sends a <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">POST</code> to your webhook URL with this payload:</p>
+          <div class="bg-surface-950 rounded-xl p-4 text-sm">
+            <pre class="code-block text-gray-300 overflow-x-auto"><code>{
+  "from":       "918082446387",
+  "raw_text":   "Buy groceries",
+  "intent":     "/task",
+  "app":        "liaw",
+  "entities":   {},
+  "timestamp":  "2026-09-10T14:30:00Z",
+  "push_name":  "Kaushal"
+}</code></pre>
+          </div>
+          <div class="mt-4 space-y-2 text-sm">
+<div><span class="text-accent-400 font-mono">from</span> <span class="text-gray-500">- phone number (no + prefix)</span></div>
+            <div><span class="text-accent-400 font-mono">raw_text</span> <span class="text-gray-500">- the original WhatsApp message</span></div>
+            <div><span class="text-accent-400 font-mono">intent</span> <span class="text-gray-500">- "/task", "/keep", "continuation", or AI-generated</span></div>
+            <div><span class="text-accent-400 font-mono">app</span> <span class="text-gray-500">- your app key (e.g. "liaw")</span></div>
+            <div><span class="text-accent-400 font-mono">entities</span> <span class="text-gray-500">- AI-extracted key/value pairs (empty for explicit commands)</span></div>
+            <div><span class="text-accent-400 font-mono">push_name</span> <span class="text-gray-500">- WhatsApp display name (optional)</span></div>
+          </div>
+          <div class="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-xs">
+            <strong>Auth:</strong> If you set a <code class="code-block bg-yellow-500/10 px-1 rounded">webhook_secret</code>, Odyssey sends it as <code class="code-block bg-yellow-500/10 px-1 rounded">x-gateway-secret</code> header.
+          </div>
+        </div>
+
+        <!-- Egress -->
+        <div class="bg-surface-900 border border-white/5 rounded-2xl p-8">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">📤</span>
+            <h3 class="text-white font-bold text-lg">Egress: How you reply</h3>
+          </div>
+          <p class="text-gray-400 text-sm mb-4">Send a <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">POST</code> to Odyssey's egress API:</p>
+          <div class="bg-surface-950 rounded-xl p-4 text-sm">
+            <pre class="code-block text-gray-300 overflow-x-auto"><code>POST http://odyssey:3000/send
+Headers:
+  Content-Type: application/json
+  x-api-key: YOUR_GATEWAY_API_KEY
+
+Body:
+{
+  "to":   "918082446387",
+  "text": "Task saved! 🎯"
+}</code></pre>
+          </div>
+          <div class="mt-4 space-y-2 text-sm">
+<div><span class="text-accent-400 font-mono">to</span> <span class="text-gray-500">- phone number (same as <code class="code-block bg-accent-500/10 px-1 rounded">from</code> in ingress)</span></div>
+            <div><span class="text-accent-400 font-mono">text</span> <span class="text-gray-500">- plain text message to send back</span></div>
+          </div>
+          <div class="mt-4 p-3 rounded-lg bg-accent-500/10 border border-accent-500/20 text-accent-300 text-xs">
+            <strong>Responses:</strong> 200 OK, 400 (missing fields), 401 (bad API key), 503 (WhatsApp disconnected).
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step by step -->
+  <section id="guide" class="py-20 px-6 bg-surface-900/50">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Step-by-step guide</h2>
+      <p class="text-gray-400 mb-12">Add a new downstream service to Odyssey in 7 steps.</p>
+
+      <div class="space-y-10">
+
+        <!-- Step 1 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">1</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Add environment variables</h3>
+            <p class="text-gray-400 text-sm mb-3">In <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">src/types/env.ts</code>, add your app's URL and optional secret to the Zod schema.</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>MY_APP_WEBHOOK_URL: z.string().url(),
+MY_APP_WEBHOOK_SECRET: z.string().optional(),</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">2</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Register your app</h3>
+            <p class="text-gray-400 text-sm mb-3">In <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">src/config/index.ts</code>, add your app to the <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">apps</code> map:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>apps: {
+  // ... existing apps
+  myapp: {
+    webhook_url: env.MY_APP_WEBHOOK_URL,
+    description: 'Your app description (used in /help and AI routing)',
+    webhook_secret: env.MY_APP_WEBHOOK_SECRET,
+  },
+},</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">3</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Map commands (optional)</h3>
+            <p class="text-gray-400 text-sm mb-3">Add slash-commands that route directly to your app in the <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">explicit_commands</code> map:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>explicit_commands: {
+  // ... existing commands
+  '/my-cmd': 'myapp',
+},</code></pre>
+            </div>
+            <p class="text-gray-500 text-xs mt-2">Skip this if you only want AI-based routing. The Gemini classifier auto-discovers your app from the <code class="code-block bg-accent-500/10 px-1 rounded">apps</code> map.</p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">4</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Set up Docker network</h3>
+            <p class="text-gray-400 text-sm mb-3">Create a Docker network and add it to <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">docker-compose.yml</code>:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code># Create the network
+docker network create myapp
+
+# Add to docker-compose.yml under networks:
+myapp:
+  external: true
+
+# Add to odyssey service's networks list:
+networks:
+  - default
+  - liaw-shared
+  - keep
+  - myapp    # ← add here</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">5</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Build your service</h3>
+            <p class="text-gray-400 text-sm mb-3">Create an HTTP service that handles the webhook. Here's a minimal Express example:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>import express from 'express';
+import axios from 'axios';
+
+const app = express();
+app.use(express.json());
+
+// Your webhook endpoint
+app.post('/webhook', async (req, res) => {
+  const { from, raw_text, intent, entities } = req.body;
+
+  // Verify gateway secret (optional but recommended)
+  const secret = req.headers['x-gateway-secret'];
+  if (secret !== process.env.GATEWAY_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Process the message...
+  const reply = handleMessage(raw_text, entities);
+
+  // Reply via Odyssey's egress API
+  await axios.post('http://odyssey:3000/send', {
+    to: from,
+    text: reply,
+  }, {
+    headers: {
+      'x-api-key': process.env.GATEWAY_API_KEY,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  res.json({ status: 'ok' });
+});
+
+app.listen(8080, () => console.log('Service running on :8080'));</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">6</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Configure .env</h3>
+            <p class="text-gray-400 text-sm mb-3">Add your service's values to <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">.env</code>:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>MY_APP_WEBHOOK_URL=http://myapp-app:8080/webhook
+MY_APP_WEBHOOK_SECRET=your-shared-secret-here
+GATEWAY_API_KEY=your-gateway-key-here</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="flex gap-5 step-num">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm z-10">7</div>
+          <div class="flex-1">
+            <h3 class="text-white font-semibold mb-2">Run and test</h3>
+            <p class="text-gray-400 text-sm mb-3">Start everything with Docker Compose:</p>
+            <div class="bg-surface-950 rounded-xl p-4 text-sm">
+              <pre class="code-block text-gray-300 overflow-x-auto"><code>docker-compose up -d</code></pre>
+            </div>
+            <p class="text-gray-500 text-xs mt-2">Send a message to your WhatsApp number. Odyssey will route it to your service, and you'll get a reply back.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Routing -->
+  <section id="ai-routing" class="py-20 px-6">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-8">AI routing: zero extra work</h2>
+      <div class="bg-surface-900 border border-white/5 rounded-2xl p-8 space-y-4 text-gray-400 leading-relaxed">
+        <p>
+          Once your app is registered in the <code class="code-block text-accent-400 bg-accent-500/10 px-1 rounded">apps</code> map, the Gemini AI classifier <span class="text-white font-medium">automatically discovers it</span>. The classifier builds its prompt from the app registry at startup. Your description becomes the routing hint.
+        </p>
+        <p>
+          This means users can message naturally ("save this link", "create a task", "remind me later") and Odyssey routes correctly without explicit commands. The AI extracts intent and entities, then forwards them in the webhook payload.
+        </p>
+        <div class="p-4 rounded-xl bg-accent-500/10 border border-accent-500/20 mt-6">
+          <p class="text-accent-300 text-sm">
+            <strong>Tip:</strong> Write a clear <code class="code-block bg-accent-500/10 px-1 rounded">description</code> for your app. The classifier uses it to decide when your service is the best match. Be specific about what your app does.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 px-6 border-t border-white/5">
+    <div class="max-w-3xl mx-auto text-center space-y-4">
+      <div class="text-gray-500 text-sm">
+        Made with obsession and procrastination by <a href="#" class="text-accent-400 hover:text-accent-300 transition-colors">Kaushal</a>
+      </div>
+      <div class="text-gray-600 text-xs">
+        Open source on <a href="#" class="text-accent-400 hover:text-accent-300 transition-colors">GitHub</a>
+      </div>
+      <div class="pt-4">
+        <a href="index.html" class="text-accent-400 hover:text-accent-300 text-sm">← Back to Odyssey</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

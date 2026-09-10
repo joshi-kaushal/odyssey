@@ -15,10 +15,15 @@ const UNIT_TO_MINUTES: Record<string, number> = {
   days: DAY_MINUTES,
   day: DAY_MINUTES,
   d: DAY_MINUTES,
+  weeks: 7 * DAY_MINUTES,
+  week: 7 * DAY_MINUTES,
+  wks: 7 * DAY_MINUTES,
+  wk: 7 * DAY_MINUTES,
+  w: 7 * DAY_MINUTES,
 };
 
 const DURATION_TOKEN_RE =
-  /(\d+(?:\.\d+)?)\s*(minutes|minute|mins|min|m|hours|hour|hrs|hr|h|days|day|d)/gi;
+  /(\d+(?:\.\d+)?)\s*(minutes|minute|mins|min|m|hours|hour|hrs|hr|h|days|day|d|weeks?|wks?|wk|w)/gi;
 
 // Captures "5pm", "10am", "14:30", "2:30pm", "12:00"
 const TIME_RE = /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i;

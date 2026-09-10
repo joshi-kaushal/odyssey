@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odyssey | Your Personal WhatsApp Command Center</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              surface: {
+                50: "#f8f7ff",
+                100: "#f0eeff",
+                800: "#1a1625",
+                900: "#110e1a",
+                950: "#0a0812",
+              },
+              accent: {
+                400: "#a78bfa",
+                500: "#8b5cf6",
+                600: "#7c3aed",
+                700: "#6d28d9",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background: #0a0812;
+      }
+      html {
+        scroll-padding-top: 5rem;
+      }
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          #a78bfa 0%,
+          #c084fc 50%,
+          #f0abfc 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .card-glow:hover {
+        box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+      }
+      .code-block {
+        font-family: "Menlo", "Monaco", "Consolas", monospace;
+      }
+      .step-line {
+        position: relative;
+      }
+      .step-line::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: -1.5rem;
+        width: 2rem;
+        height: 2px;
+        background: linear-gradient(90deg, #7c3aed, transparent);
+      }
+      @media (max-width: 768px) {
+        .step-line::after {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="text-gray-300 antialiased">
+    <!-- Nav -->
+    <nav
+      class="fixed top-0 left-0 right-0 z-50 bg-surface-950/80 backdrop-blur-md border-b border-white/5"
+    >
+      <div
+        class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <a
+          href="#top"
+          class="flex items-center gap-2 text-white font-semibold text-sm"
+        >
+          <span class="text-lg">🧭</span>
+          <span>Odyssey</span>
+        </a>
+        <a
+          href="developers.html"
+          class="text-accent-400 hover:text-accent-300 transition-colors text-sm font-medium"
+        >
+          For Developers
+        </a>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section
+      id="top"
+      class="py-32 flex flex-col items-center justify-center px-6 text-center"
+    >
+      <div class="mb-8 text-6xl">🧭</div>
+      <h1
+        class="text-5xl md:text-7xl font-bold gradient-text leading-normal pb-4 mb-4"
+      >
+        Odyssey
+      </h1>
+      <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mb-4">
+        Your personal AI-powered WhatsApp command center.
+      </p>
+      <p class="text-base text-gray-500 max-w-xl mb-10">
+        One chat. Intelligent routing. Your services, always at your fingertips.
+      </p>
+      <a
+        href="#what"
+        class="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition-colors text-sm font-medium"
+      >
+        Learn more
+        <svg
+          class="w-4 h-4 animate-bounce"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </a>
+    </section>
+
+    <!-- What is Odyssey -->
+    <section id="what" class="py-24 px-6">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-8">
+          What is Odyssey?
+        </h2>
+        <div class="space-y-5 text-gray-400 leading-relaxed text-lg">
+          <p>
+            Odyssey is a
+            <span class="text-accent-400 font-medium"
+              >personal WhatsApp gateway</span
+            >
+            that turns your WhatsApp into a unified command center. Instead of
+            juggling multiple apps, you get everything through one conversation.
+          </p>
+          <p>
+            It connects to your WhatsApp using an intelligent routing engine.
+            When you send a message, Odyssey figures out which of your services
+            should handle it, whether that's saving a quick note, creating a
+            task, or setting a reminder.
+          </p>
+          <p>
+            Built with an AI-powered intent classifier, Odyssey understands
+            context. No command needed for follow-ups. It remembers what you
+            were doing and routes your next message to the right place
+            automatically.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" class="py-24 px-6 bg-surface-900/50">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+          How it works
+        </h2>
+        <div
+          class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-0"
+        >
+          <!-- Step 1 -->
+          <div class="flex flex-col items-center text-center step-line">
+            <div
+              class="w-16 h-16 rounded-2xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-4"
+            >
+              💬
+            </div>
+            <h3 class="text-white font-semibold mb-1">You message</h3>
+            <p class="text-gray-500 text-sm max-w-[200px]">
+              Send any message to your Odyssey WhatsApp number
+            </p>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex flex-col items-center text-center step-line">
+            <div
+              class="w-16 h-16 rounded-2xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-4"
+            >
+              🧠
+            </div>
+            <h3 class="text-white font-semibold mb-1">Odyssey routes</h3>
+            <p class="text-gray-500 text-sm max-w-[200px]">
+              The intelligent router matches your intent to the right service
+            </p>
+          </div>
+          <!-- Step 3 -->
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="w-16 h-16 rounded-2xl bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-2xl mb-4"
+            >
+              ⚡
+            </div>
+            <h3 class="text-white font-semibold mb-1">Service responds</h3>
+            <p class="text-gray-500 text-sm max-w-[200px]">
+              Your app handles the request and replies back on WhatsApp
+            </p>
+          </div>
+        </div>
+        <!-- Routing tiers -->
+        <div class="mt-16 bg-surface-950 border border-white/5 rounded-2xl p-8">
+          <h3 class="text-white font-semibold mb-4 text-center">
+            Four-tier intelligent routing
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+              <span
+                class="text-accent-400 font-mono text-xs bg-accent-500/10 px-2 py-1 rounded shrink-0"
+                >T0</span
+              >
+              <div>
+                <span class="text-white font-medium">Local commands</span
+                ><br /><span class="text-gray-500"
+                  >/remind, /help: handled instantly, no external service</span
+                >
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+              <span
+                class="text-accent-400 font-mono text-xs bg-accent-500/10 px-2 py-1 rounded shrink-0"
+                >T1</span
+              >
+              <div>
+                <span class="text-white font-medium">Explicit commands</span
+                ><br /><span class="text-gray-500"
+                  >/task, /keep, /done: fast-path to your service</span
+                >
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+              <span
+                class="text-accent-400 font-mono text-xs bg-accent-500/10 px-2 py-1 rounded shrink-0"
+                >T2</span
+              >
+              <div>
+                <span class="text-white font-medium">Session continuity</span
+                ><br /><span class="text-gray-500"
+                  >Follow-up messages auto-route to your last service</span
+                >
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+              <span
+                class="text-accent-400 font-mono text-xs bg-accent-500/10 px-2 py-1 rounded shrink-0"
+                >T3</span
+              >
+              <div>
+                <span class="text-white font-medium">AI classification</span
+                ><br /><span class="text-gray-500"
+                  >Natural language gets classified and routed
+                  automatically</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="py-24 px-6">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+          Services
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Keep -->
+          <div
+            class="bg-surface-900 border border-white/5 rounded-2xl p-8 card-glow transition-shadow"
+          >
+            <div class="text-3xl mb-4">📝</div>
+            <h3 class="text-xl font-bold text-white mb-2">Keep</h3>
+            <p class="text-gray-400 mb-6">
+              Save notes, links, bookmarks, and random texts. Quick capture,
+              always accessible.
+            </p>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/keep</code
+                >
+                <span class="text-gray-500 text-sm"
+                  >Save a note, link, or bookmark</span
+                >
+              </div>
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/list</code
+                >
+                <span class="text-gray-500 text-sm">List all saved items</span>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center gap-4 text-sm">
+              <a
+                href="#"
+                class="inline-flex items-center gap-1 text-accent-400 hover:text-accent-300 transition-colors font-medium"
+                >GitHub ↗</a
+              >
+              <a
+                href="#"
+                class="inline-flex items-center gap-1 text-accent-400 hover:text-accent-300 transition-colors font-medium"
+                >Live app ↗</a
+              >
+            </div>
+          </div>
+
+          <!-- Live in a Week -->
+          <div
+            class="bg-surface-900 border border-white/5 rounded-2xl p-8 card-glow transition-shadow"
+          >
+            <div class="text-3xl mb-4">📅</div>
+            <h3 class="text-xl font-bold text-white mb-2">Live in a Week</h3>
+            <p class="text-gray-400 mb-6">
+              Your personal task manager and weekly planner, all through
+              WhatsApp.
+            </p>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/task</code
+                >
+                <span class="text-gray-500 text-sm">Create a new task</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/today</code
+                >
+                <span class="text-gray-500 text-sm">View today's tasks</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/week</code
+                >
+                <span class="text-gray-500 text-sm">View weekly plan</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-2 py-1 rounded"
+                  >/done</code
+                >
+                <span class="text-gray-500 text-sm">Mark a task as done</span>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center gap-4 text-sm">
+              <a
+                href="#"
+                class="inline-flex items-center gap-1 text-accent-400 hover:text-accent-300 transition-colors font-medium"
+                >GitHub ↗</a
+              >
+              <a
+                href="#"
+                class="inline-flex items-center gap-1 text-accent-400 hover:text-accent-300 transition-colors font-medium"
+                >Live app ↗</a
+              >
+            </div>
+          </div>
+
+          <!-- More incoming -->
+          <div
+            class="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+          >
+            <div class="text-3xl mb-4 opacity-60">🚧</div>
+            <h3 class="text-xl font-bold text-gray-400 mb-2">More incoming</h3>
+            <p class="text-gray-600 text-sm">
+              New services are on the way. Stay tuned.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Command Center -->
+    <section id="commands" class="py-24 px-6 bg-surface-900/50">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+          Command Center
+        </h2>
+        <p class="text-gray-500 text-center mb-12">
+          Full reference for every command available in Odyssey.
+        </p>
+
+        <div
+          x-data="{ active: 'remind' }"
+          class="bg-surface-950 border border-white/5 rounded-2xl overflow-hidden"
+        >
+          <!-- Tabs -->
+          <div class="flex border-b border-white/5">
+            <button
+              @click="active = 'remind'"
+              :class="active === 'remind' ? 'text-accent-400 border-accent-400' : 'text-gray-500 border-transparent hover:text-gray-300'"
+              class="flex-1 py-4 text-sm font-medium border-b-2 transition-colors"
+            >
+              Remind
+            </button>
+            <button
+              @click="active = 'keep'"
+              :class="active === 'keep' ? 'text-accent-400 border-accent-400' : 'text-gray-500 border-transparent hover:text-gray-300'"
+              class="flex-1 py-4 text-sm font-medium border-b-2 transition-colors"
+            >
+              Keep
+            </button>
+            <button
+              @click="active = 'liaw'"
+              :class="active === 'liaw' ? 'text-accent-400 border-accent-400' : 'text-gray-500 border-transparent hover:text-gray-300'"
+              class="flex-1 py-4 text-sm font-medium border-b-2 transition-colors"
+            >
+              Live in a Week
+            </button>
+          </div>
+
+          <!-- Remind Panel -->
+          <div
+            x-show="active === 'remind'"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            class="p-8"
+          >
+            <div class="mb-6">
+              <h3 class="text-white font-semibold text-lg mb-2">/remind</h3>
+              <p class="text-gray-400 text-sm">
+                Set a one-off reminder using natural language. Fires once at the
+                specified time.
+              </p>
+            </div>
+            <div class="space-y-6">
+              <!-- Keywords -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Keywords
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind today Buy milk</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind tonight Call mom</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind tomorrow Dentist at 10am</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Relative durations -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Relative durations
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind in 30 min Check the oven</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind in 2h Stand-up meeting</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind in 3 days Follow up with client</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind in 2w Book flights</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Weekdays -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Weekdays
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind monday Submit the report</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind this friday Team dinner</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind next wednesday Review PRs</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Named dates -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Named dates
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 25 sep Book flight</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 1 jan New year goal setting</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Numeric dates -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Numeric dates
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 25/09 Dentist appointment</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 2026-09-25 Conference</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Bare times -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Bare times
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 10am Standup</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 1:30pm Lunch with Sarah</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind 13:30 Call bank</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Combined -->
+              <div>
+                <h4
+                  class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3"
+                >
+                  Combined
+                </h4>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind tomorrow 5pm Review PRs</code
+                    >
+                  </div>
+                  <div class="flex items-center gap-3 text-sm">
+                    <code
+                      class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                      >/remind monday 9am Sprint planning</code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Keep Panel -->
+          <div
+            x-show="active === 'keep'"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            class="p-8"
+          >
+            <div class="mb-6">
+              <h3 class="text-white font-semibold text-lg mb-2">
+                Keep commands
+              </h3>
+              <p class="text-gray-400 text-sm">
+                Quick-capture notes, links, and bookmarks. Send them to Keep and
+                access them anytime.
+              </p>
+            </div>
+            <div class="space-y-4">
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/keep</code
+                  >
+                  <span class="text-gray-500 text-sm">Save anything</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-3">
+                  Save a note, link, bookmark, or random thought. Just type it
+                  after the command.
+                </p>
+                <div class="space-y-2">
+                  <div class="text-sm">
+                    <code class="code-block text-gray-500"
+                      >/keep Read this article later: https://example.com</code
+                    >
+                  </div>
+                  <div class="text-sm">
+                    <code class="code-block text-gray-500"
+                      >/keep Meeting notes: discussed Q3 roadmap</code
+                    >
+                  </div>
+                  <div class="text-sm">
+                    <code class="code-block text-gray-500"
+                      >/keep https://github.com/awesome/repo</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/list</code
+                  >
+                  <span class="text-gray-500 text-sm">View saved items</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                  See everything you've saved. Links, notes, all in one place.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Liaw Panel -->
+          <div
+            x-show="active === 'liaw'"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            class="p-8"
+          >
+            <div class="mb-6">
+              <h3 class="text-white font-semibold text-lg mb-2">
+                Live in a Week
+              </h3>
+              <p class="text-gray-400 text-sm">
+                Your personal task manager and weekly planner. Create, view, and
+                complete tasks through WhatsApp.
+              </p>
+            </div>
+            <div class="space-y-4">
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/task</code
+                  >
+                  <span class="text-gray-500 text-sm">Create a task</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-3">
+                  Add a new task to your list. Describe what needs to be done.
+                </p>
+                <div class="space-y-2">
+                  <div class="text-sm">
+                    <code class="code-block text-gray-500"
+                      >/task Buy groceries for the week</code
+                    >
+                  </div>
+                  <div class="text-sm">
+                    <code class="code-block text-gray-500"
+                      >/task Prepare slides for Monday presentation</code
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/today</code
+                  >
+                  <span class="text-gray-500 text-sm">Today's view</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                  See everything on your plate for today. Your daily briefing.
+                </p>
+              </div>
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/week</code
+                  >
+                  <span class="text-gray-500 text-sm">Weekly plan</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                  View your entire week at a glance. Plan ahead, see what's
+                  coming.
+                </p>
+              </div>
+              <div class="bg-white/[0.02] rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-2">
+                  <code
+                    class="code-block text-accent-400 bg-accent-500/10 px-2 py-1 rounded"
+                    >/done</code
+                  >
+                  <span class="text-gray-500 text-sm">Mark as done</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                  Cross off completed tasks. Feel the satisfaction.
+                </p>
+                <div class="mt-3 text-sm">
+                  <code class="code-block text-gray-500"
+                    >/done Buy groceries</code
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Getting Started -->
+    <section id="start" class="py-24 px-6">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+          Getting Started
+        </h2>
+        <div class="space-y-8">
+          <div class="flex gap-5">
+            <div
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm"
+            >
+              1
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Get invited</h3>
+              <p class="text-gray-400">
+                Reach out to get your beta invite key. Each key gives you a
+                trial period to explore all of Odyssey's services.
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm"
+            >
+              2
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Connect on WhatsApp</h3>
+              <p class="text-gray-400">
+                Send your invite key to the Odyssey WhatsApp number. You'll get
+                a confirmation that your account is active.
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm"
+            >
+              3
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Start chatting</h3>
+              <p class="text-gray-400">
+                Send a command or just type naturally. Use
+                <code
+                  class="code-block text-accent-400 text-sm bg-accent-500/10 px-1 rounded"
+                  >/help</code
+                >
+                to see what's available.
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-accent-600/20 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-sm"
+            >
+              4
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Build your own</h3>
+              <p class="text-gray-400">
+                Want to add your own service? Check out the
+                <a
+                  href="developers.html"
+                  class="text-accent-400 hover:text-accent-300 underline underline-offset-2"
+                  >developer guide</a
+                >
+                to build an extension.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/5">
+      <div class="max-w-3xl mx-auto text-center space-y-4">
+        <div class="text-gray-500 text-sm">
+          Made with years of procrastination and an obsession to scratch a niche
+          itch, by
+          <a
+            href="https://kaushaljoshi.life/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-accent-400 hover:text-accent-300 transition-colors"
+            >Kaushal</a
+          >
+        </div>
+        <div class="text-gray-600 text-xs">
+          Open source on
+          <a
+            href="https://github.com/joshi-kaushal/odyssey"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-accent-400 hover:text-accent-300 transition-colors"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

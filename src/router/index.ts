@@ -5,7 +5,7 @@ import { env } from '../config/env';
 import { getSession, setSession } from '../session';
 import { classifyMessage, answerDirectly } from '../ai';
 import { WebhookPayload } from '../types/payload';
-import { parseDurationToMinutes, parseDateShortcut } from '../reminders/duration';
+import { parseWhen, remindRegex, REMINDER_TIMEZONE } from '../reminders/when';
 import { addReminder } from '../reminders';
 import crypto from 'crypto';
 
@@ -34,42 +34,40 @@ const localCommands: LocalCommand[] = [
       const send = sendWhatsAppMessage;
       if (!send) return;
 
-      // Syntax: /remind <date-or-duration> <text...>
-      // Date shortcuts: tomorrow, tmrw, nextweek, nextmonth, 7d, 29days
-      // Duration: 30 min, 2h, 1 day 3h
-      // Date + time: tomorrow 5pm, nextweek 10am
-      const match = text.match(/^\/remind\s+(\S+)\s+(.+)/i);
+      // Syntax: /remind <when> <text...>
+      const match = text.match(remindRegex);
       if (!match) {
-        const usage = `*Usage:* /remind <date-or-duration> <text>
+        const usage = `*Usage:* /remind <when> <text>
 • /remind tomorrow 5pm team standup
-• /remind 30 min buy milk
-• /remind nextweek review doc`;
+• /remind next monday gym
+• /remind 25 sep at 14:30 birthday
+• /remind in 2 hours check server
+• /remind 10pm call mom
+• /remind 25/09/2026 submit report`;
         await send(from, usage);
         return;
       }
 
-      const [, datetimePart, reminderText] = match;
-
-      // Try date shortcut first (e.g. "tomorrow 5pm", "nextweek", "7d")
-      const dateResult = parseDateShortcut(datetimePart);
-      if (dateResult !== null) {
-        const jobId = crypto.randomUUID();
-        addReminder(jobId, { at: dateResult.getTime(), text: reminderText.trim(), to: from });
-        await send(from, `Reminder set for ${reminderText.trim()}.`);
-        return;
-      }
-
-      // Fall back to duration (e.g. "30 min", "2h", "1 day")
-      const minutes = parseDurationToMinutes(datetimePart);
-      if (minutes === null) {
-        await send(from, 'Could not parse that date or duration. Try "tomorrow 5pm", "30 min", or "7d".');
+      const [, whenStr, reminderText] = match;
+      const date = parseWhen(whenStr);
+      if (!date) {
+        await send(from, 'Could not parse that date or time. Try "tomorrow 5pm", "next monday", or "in 2 hours".');
         return;
       }
 
       const jobId = crypto.randomUUID();
-      const at = Date.now() + minutes * 60_000;
-      addReminder(jobId, { at, text: reminderText.trim(), to: from });
-      await send(from, `Reminder set for ${reminderText.trim()}.`);
+      addReminder(jobId, { at: date.getTime(), text: reminderText.trim(), to: from });
+
+      const formatted = date.toLocaleString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: REMINDER_TIMEZONE,
+      });
+      await send(from, `Reminder set for ${reminderText.trim()} on ${formatted}.`);
     },
   },
   {
