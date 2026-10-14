@@ -22,7 +22,9 @@ const rawConfig: OdysseyConfig = {
     '/week': 'liaw',
     '/done': 'liaw',
     '/otp': 'liaw',
+
     '/keep': 'keep',
+    '/ai': 'keep',
     '/list': 'keep',
   },
   // Commands handled entirely in-process — never forwarded to a webhook.
