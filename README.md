@@ -21,44 +21,64 @@ Odyssey is a unified, intelligent WhatsApp API gateway built using Node.js, Type
 
 ```mermaid
 flowchart TD
-    User([User on WhatsApp]) <-->|Baileys / WebSockets| Odyssey[Odyssey Gateway]
+    WA([WhatsApp User])
 
-    subgraph Routing Logic
-    Odyssey --> RouteCheck{Routing Rule}
-    RouteCheck -->|0. Local Command| Local[/remind, /help]
-    RouteCheck -->|1. Explicit Command| AppWebhook
-    RouteCheck -->|2. Active Session| AppWebhook
-    RouteCheck -->|3. Gemini Intent Match| AppWebhook
-    RouteCheck -.->|4. Fallback| Drop[Log & Ignore]
+    WA <-->|WhatsApp / Baileys| Odyssey[Odyssey Gateway]
+
+    subgraph Odyssey_Core["Odyssey Core"]
+        Receiver[Message Receiver]
+        Router{Routing Engine}
+
+        Receiver --> Router
+
+        Router -->|0. Local Command| Local[Local Commands]
+        Router -->|1. Explicit Command| SessionRouter[App Router]
+        Router -->|2. Active Session| SessionStore[(Session Store)]
+        SessionStore --> SessionRouter
+
+        Router -->|3. Intent Unknown| Gemini[Gemini Intent Classifier]
+        Gemini -->|Matched| SessionRouter
+        Gemini -->|No Match| Log[Log / Ignore]
     end
 
-    subgraph Downstream Apps
-    AppWebhook((POST /webhook)) --> LIAW[Live in a Week]
-    AppWebhook --> Notes[Notes & Links Service]
-    AppWebhook --> Other[Other Services]
+    Odyssey --> Receiver
+
+    subgraph Apps["Downstream Applications"]
+        LIAW[Live in a Week]
+        Notes[Notes & Links]
+        Other[Other Services]
     end
 
-    LIAW -->|POST /send| Egress(Odyssey Egress API)
+    SessionRouter --> LIAW
+    SessionRouter --> Notes
+    SessionRouter --> Other
+
+    LIAW -->|POST /send| Egress
     Notes -->|POST /send| Egress
     Other -->|POST /send| Egress
 
-    Egress --> User
+    Egress[Odyssey Egress API] --> Odyssey
+    Odyssey -->|Baileys| WA
 ```
 
 ## Setup & Local Development
 
 ### 1. Requirements
+
 - Node.js v20+
 - Docker & Docker Compose (optional)
 - A WhatsApp account to scan the QR code
 
 ### 2. Installation
+
 ```bash
 npm install
 ```
 
 ### 3. Environment Variables
+
 Create a `.env` file based on `.env.example`:
+
 ```ini
 PORT=3000
 GATEWAY_API_KEY=your_super_secret_api_key_here
@@ -67,42 +87,48 @@ ALLOWED_NUMBERS=919876543210  # First entry is the admin — receives alerts abo
 ```
 
 ### 4. Configuration (`src/config/index.ts`)
+
 Downstream apps, their webhook URLs, and explicit routing prefixes are defined directly in `src/config/index.ts`. Edit that file to add or modify apps and commands. `local_commands` lists commands handled in-process (e.g. `/remind`, `/help`).
 
 ### 5. Running the Gateway
+
 Run via Docker:
+
 ```bash
 docker compose up --build
 ```
+
 Or run natively:
+
 ```bash
 npm run dev
 ```
 
 ### 6. WhatsApp Authentication
+
 When the application starts, it will print a QR code in the terminal. Open WhatsApp on your phone -> **Linked Devices** -> **Link a Device**, and scan the QR code. Your session keys will be saved in the `auth_info_baileys` folder.
 
 ## Local Commands
 
 Odyssey handles these commands in-process — no webhook call is made.
 
-| Command | Description |
-|---|---|
-| `/remind <date-or-duration> <text>` | Set a one-off reminder |
-| `/help` | Show Odyssey commands and onboarded services |
-| `/help <service>` | Forward `/help` to a specific service |
+| Command                             | Description                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `/remind <date-or-duration> <text>` | Set a one-off reminder                       |
+| `/help`                             | Show Odyssey commands and onboarded services |
+| `/help <service>`                   | Forward `/help` to a specific service        |
 
 ### Date shortcuts for `/remind`
 
-| Format | Meaning |
-|---|---|
-| `tomorrow`, `tmrw` | Next day at 9 AM |
-| `tomorrow 5pm` | Next day at 5 PM |
-| `nextweek` | Next Monday at 9 AM |
-| `nextweek 10am` | Next Monday at 10 AM |
-| `nextmonth` | 30 days from now at 9 AM |
-| `7d`, `7days` | 7 days from now at 9 AM |
-| `29d` | 29 days from now at 9 AM |
+| Format             | Meaning                  |
+| ------------------ | ------------------------ |
+| `tomorrow`, `tmrw` | Next day at 9 AM         |
+| `tomorrow 5pm`     | Next day at 5 PM         |
+| `nextweek`         | Next Monday at 9 AM      |
+| `nextweek 10am`    | Next Monday at 10 AM     |
+| `nextmonth`        | 30 days from now at 9 AM |
+| `7d`, `7days`      | 7 days from now at 9 AM  |
+| `29d`              | 29 days from now at 9 AM |
 
 Time is optional on all shortcuts. Supported time formats: `5pm`, `10am`, `14:30`, `2:30pm`.
 
@@ -116,12 +142,15 @@ Odyssey exposes REST endpoints for downstream apps. Once running, view the inter
 `http://localhost:3000/docs`
 
 ### Send Message
+
 **`POST /send`**
 
 **Headers:**
+
 - `x-api-key`: Must match `GATEWAY_API_KEY` in `.env`
 
 **Body:**
+
 ```json
 {
   "to": "919876543210",
@@ -134,10 +163,12 @@ Odyssey exposes REST endpoints for downstream apps. Once running, view the inter
 When Odyssey receives a WhatsApp message from a whitelisted number, it determines the target app and sends a `POST` request to the app's `webhook_url` with the following payload:
 
 **Headers:**
+
 - `x-gateway-secret`: The app's configured `webhook_secret` (for verification)
 - `content-type`: `application/json`
 
 **Body:**
+
 ```json
 {
   "from": "919876543210",
@@ -149,9 +180,12 @@ When Odyssey receives a WhatsApp message from a whitelisted number, it determine
   "push_name": "John"
 }
 ```
-*Note: Downstream apps should handle these requests asynchronously or return a `200 OK` quickly. They should use the Egress API (`POST /send`) to send any actual replies.*
+
+_Note: Downstream apps should handle these requests asynchronously or return a `200 OK` quickly. They should use the Egress API (`POST /send`) to send any actual replies._
 
 ## Deployment
+
 Odyssey is designed to be deployed easily on platforms like **Railway** or AWS.
+
 1. Deploy using the included `Dockerfile`.
 2. Ensure you mount a persistent volume to `/app/auth_info_baileys` to persist your WhatsApp session keys between deployments/restarts.
