@@ -4,6 +4,7 @@ export const EnvSchema = z.object({
   PORT: z.string().default('3000'),
   GATEWAY_API_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().min(1),
+  GEMINI_FLASH_MODEL: z.string().min(1),
   // Comma-separated admin numbers, no + prefix (e.g. "919876543210").
   // These are the only numbers that bypass user checks and can run admin commands.
   ALLOWED_NUMBERS: z.string().min(1),

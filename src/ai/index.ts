@@ -9,7 +9,7 @@ import pino from 'pino';
 const logger = pino({ level: 'info' });
 
 const model = new ChatGoogleGenerativeAI({
-  model: 'gemini-2.5-flash',
+  model: env.GEMINI_FLASH_MODEL,
   apiKey: env.GEMINI_API_KEY,
 });
 
